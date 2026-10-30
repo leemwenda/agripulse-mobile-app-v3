@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
 import { SplashScreen, LoginScreen, RegisterScreen } from './screens/Auth';
+import { WelcomeScreen } from './screens/Welcome';
 import { HomeScreen } from './screens/Home';
 import { FarmListScreen, RegisterAnimalScreen, AnimalDetailScreen } from './screens/Farm';
 import { MilkScreen, HealthScreen, BreedingScreen, FinanceScreen } from './screens/Records';
@@ -12,7 +13,7 @@ import { MoreScreen, NotificationsScreen, ProfileScreen, SettingsScreen, Placeho
 function PrivateRoute({ children }: { children: React.ReactElement }) {
   const { mode } = useApp();
   if (mode === 'checking') return <SplashScreen />;
-  if (mode === 'signed-out') return <Navigate to="/login" replace />;
+  if (mode === 'signed-out') return <Navigate to="/welcome" replace />;
   return children;
 }
 
@@ -26,13 +27,14 @@ function PublicOnlyRoute({ children }: { children: React.ReactElement }) {
 function Root() {
   const { mode } = useApp();
   if (mode === 'checking') return <SplashScreen />;
-  return <Navigate to={mode === 'signed-out' ? '/login' : '/home'} replace />;
+  return <Navigate to={mode === 'signed-out' ? '/welcome' : '/home'} replace />;
 }
 
 function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Root />} />
+      <Route path="/welcome" element={<PublicOnlyRoute><WelcomeScreen /></PublicOnlyRoute>} />
       <Route path="/login" element={<PublicOnlyRoute><LoginScreen /></PublicOnlyRoute>} />
       <Route path="/register" element={<PublicOnlyRoute><RegisterScreen /></PublicOnlyRoute>} />
 

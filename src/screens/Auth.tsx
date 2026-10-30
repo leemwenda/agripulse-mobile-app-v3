@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock, Mail, Loader2 } from 'lucide-react';
 import { AuthLayout } from '../components/layout';
 import { Button, FormField, TextInput, Select, ToastStack, BrandLogo } from '../components/ui';
@@ -131,7 +131,9 @@ export function LoginScreen() {
 
 export function RegisterScreen() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'farmer', farmName: '' });
+  const [params] = useSearchParams();
+  const startRole = ['farmer', 'buyer', 'vet'].includes(params.get('role') || '') ? (params.get('role') as string) : 'farmer';
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: startRole, farmName: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
