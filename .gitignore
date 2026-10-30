@@ -5,3 +5,18 @@ android/build
 android/.gradle
 .bak-*
 *.bak
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Android signing credentials
+*.jks
+*.keystore
+key.properties
+google-services.json
+
+# Local IDE files
+.idea/
+.vscode/
