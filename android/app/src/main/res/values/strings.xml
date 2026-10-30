@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AgriPulse</string>
+    <string name="title_activity_main">AgriPulse</string>
+    <string name="package_name">me.agripulse.app</string>
+    <string name="custom_url_scheme">me.agripulse.app</string>
+</resources>
