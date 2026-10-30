@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock, Mail, Loader2 } from 'lucide-react';
 import { AuthLayout } from '../components/layout';
-import { Button, FormField, TextInput, Select, ToastStack, BrandLogo } from '../components/ui';
+import { Button, FormField, TextInput, ToastStack, BrandLogo } from '../components/ui';
 import { useApp } from '../context/AppContext';
 import { AuthApi } from '../lib/api';
 import { isNativeApp, startGoogleSignIn } from '../lib/googleAuth';
@@ -122,7 +122,7 @@ export function LoginScreen() {
 
       <p className="mt-6 pb-8 text-center text-sm text-slate-500">
         New to AgriPulse?{' '}
-        <button className="font-semibold text-emerald-700" onClick={() => navigate('/register')}>Create an account</button>
+        <button className="font-semibold text-emerald-700" onClick={() => navigate('/journey')}>Create an account</button>
       </p>
       <ToastStack />
     </AuthLayout>
@@ -169,7 +169,7 @@ export function RegisterScreen() {
 
   return (
     <AuthLayout>
-      <BrandHeader subtitle="Create your AgriPulse account" />
+      <BrandHeader subtitle={'Create your ' + (({ farmer: 'Farm Owner', buyer: 'Buyer', vet: 'Veterinarian' } as Record<string, string>)[form.role] || 'AgriPulse') + ' account'} />
       <form onSubmit={onSubmit} className="space-y-4 px-6 pt-4 pb-10">
         <FormField label="Full name">
           <TextInput required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
@@ -179,13 +179,6 @@ export function RegisterScreen() {
         </FormField>
         <FormField label="Password" hint="At least 8 characters">
           <TextInput type="password" required minLength={8} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-        </FormField>
-        <FormField label="I am a...">
-          <Select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
-            <option value="farmer">Farmer / Farm owner</option>
-            <option value="buyer">Livestock buyer</option>
-            <option value="vet">Veterinarian</option>
-          </Select>
         </FormField>
         {form.role === 'farmer' && (
           <FormField label="Farm name">

@@ -32,3 +32,23 @@ body {
   --color-brand-earth: #92400e;
   --color-brand-dark: #060e09;
 }
+
+/* ---- Dark mode (first pass): remap the grey scale and white cards ---- */
+html.dark {
+  color-scheme: dark;
+  --color-slate-50: #0b1220;
+  --color-slate-100: #111a2b;
+  --color-slate-200: #1e293b;
+  --color-slate-300: #334155;
+  --color-slate-400: #64748b;
+  --color-slate-500: #94a3b8;
+  --color-slate-600: #cbd5e1;
+  --color-slate-700: #e2e8f0;
+  --color-slate-800: #f1f5f9;
+  --color-slate-900: #f8fafc;
+  --color-emerald-50: #0d2418;
+  --color-emerald-100: #123a22;
+  --color-emerald-200: #166534;
+}
+html.dark .bg-white:not(.keep-white) { background-color: #131c2e; }
+html.dark .bg-white\/95 { background-color: rgb(19 28 46 / 0.95); }

@@ -26,7 +26,7 @@ export function BrandLogo({ size = 56 }: { size?: number }) {
       src="/brand-logo-source.png"
       alt="AgriPulse"
       onError={() => setFailed(true)}
-      className="rounded-2xl bg-white object-contain p-1.5 shadow-lg shadow-emerald-900/20"
+      className="keep-white rounded-2xl bg-white object-contain p-1.5 shadow-lg shadow-emerald-900/20"
       style={{ height: size, width: size }}
     />
   );

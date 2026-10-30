@@ -35,7 +35,7 @@ function Logo({ size = 40 }: { size?: number }) {
     <img
       src="/brand-logo-source.png"
       alt="AgriPulse"
-      className="rounded-lg bg-white object-contain p-1"
+      className="keep-white rounded-lg bg-white object-contain p-1"
       style={{ height: size, width: size }}
     />
   );
@@ -75,7 +75,7 @@ export function WelcomeScreen() {
                 AgriPulse connects farmers, buyers and veterinarians on one secure platform for smarter livestock management across Kenya.
               </p>
               <div className="mt-6 flex flex-col gap-3">
-                <button onClick={() => navigate('/register')} className="flex items-center justify-center gap-2 rounded-xl bg-green-600 py-3.5 text-[15px] font-bold shadow-lg shadow-green-600/30 active:scale-[0.99]">
+                <button onClick={() => navigate('/journey')} className="flex items-center justify-center gap-2 rounded-xl bg-green-600 py-3.5 text-[15px] font-bold shadow-lg shadow-green-600/30 active:scale-[0.99]">
                   Get Started <ArrowRight className="h-4 w-4" />
                 </button>
                 <button onClick={() => navigate('/login')} className="rounded-xl border border-white/20 bg-white/10 py-3.5 text-[15px] font-semibold backdrop-blur active:scale-[0.99]">
@@ -139,7 +139,7 @@ export function WelcomeScreen() {
             <p className="mt-2 text-xs leading-relaxed text-white/65">
               Bring your farm records, livestock management and marketplace activity together in one place.
             </p>
-            <button onClick={() => navigate('/register')} className="mt-4 w-full rounded-xl bg-green-600 py-3.5 text-[15px] font-bold">
+            <button onClick={() => navigate('/journey')} className="mt-4 w-full rounded-xl bg-green-600 py-3.5 text-[15px] font-bold">
               Create your account
             </button>
             <button onClick={() => navigate('/login')} className="mt-2 w-full py-2 text-sm font-semibold text-green-400">

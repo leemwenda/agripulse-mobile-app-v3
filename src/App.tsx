@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
 import { SplashScreen, LoginScreen, RegisterScreen } from './screens/Auth';
 import { WelcomeScreen } from './screens/Welcome';
+import { JourneyScreen } from './screens/Journey';
 import { HomeScreen } from './screens/Home';
 import { FarmListScreen, RegisterAnimalScreen, AnimalDetailScreen } from './screens/Farm';
 import { MilkScreen, HealthScreen, BreedingScreen, FinanceScreen } from './screens/Records';
@@ -35,6 +36,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Root />} />
       <Route path="/welcome" element={<PublicOnlyRoute><WelcomeScreen /></PublicOnlyRoute>} />
+      <Route path="/journey" element={<PublicOnlyRoute><JourneyScreen /></PublicOnlyRoute>} />
       <Route path="/login" element={<PublicOnlyRoute><LoginScreen /></PublicOnlyRoute>} />
       <Route path="/register" element={<PublicOnlyRoute><RegisterScreen /></PublicOnlyRoute>} />
 

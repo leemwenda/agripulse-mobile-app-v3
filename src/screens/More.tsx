@@ -11,6 +11,7 @@ import { formatDateTime, initials } from '../lib/format';
 import { useRemoteData } from '../lib/useRemoteData';
 import { NotificationsApi } from '../lib/api';
 import { ErrorBanner } from './Home';
+import { useTheme } from '../lib/theme';
 
 export function MoreScreen() {
   const navigate = useNavigate();
@@ -133,12 +134,12 @@ export function ProfileScreen() {
 
 export function SettingsScreen() {
   const [notifEnabled, setNotifEnabled] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+  const { theme, toggle } = useTheme();
   return (
     <AuthedShell title="Settings" showBack>
       <div className="space-y-3">
         <ToggleRow icon={Bell} label="Push notifications" description="Vaccination, calving and marketplace alerts" checked={notifEnabled} onChange={setNotifEnabled} />
-        <ToggleRow icon={Moon} label="Dark mode" description="Not yet available in this preview" checked={darkMode} onChange={setDarkMode} disabled />
+        <ToggleRow icon={Moon} label="Dark mode" description="Use a dark colour theme" checked={theme === 'dark'} onChange={() => toggle()} />
         <Card>
           <p className="text-sm font-semibold text-slate-900">Measurement units</p>
           <p className="mt-0.5 text-xs text-slate-500">Liters (L) for milk · Kenyan Shillings (KSh) for currency</p>

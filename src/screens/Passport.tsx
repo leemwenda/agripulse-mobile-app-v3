@@ -30,7 +30,7 @@ export function PassportScreen() {
     <AuthedShell title="Digital Passport" showBack>
       <div className="space-y-4">
         <Card className="flex flex-col items-center gap-3 bg-emerald-700 text-white">
-          <div className="rounded-xl bg-white p-3">
+          <div className="keep-white rounded-xl bg-white p-3">
             <QRCodeSVG value={verifyUrl} size={148} />
           </div>
           <div className="text-center">
