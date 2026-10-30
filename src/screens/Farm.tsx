@@ -11,6 +11,7 @@ import { useRemoteData } from '../lib/useRemoteData';
 import { AnimalsApi, MilkApi, HealthApi, BreedingApi } from '../lib/api';
 import { ageFromDOB, formatDate, formatLiters } from '../lib/format';
 import { ErrorBanner } from './Home';
+import { API_BASE_URL } from '../lib/httpClient';
 
 export function FarmListScreen() {
   const navigate = useNavigate();
@@ -194,7 +195,7 @@ export function AnimalDetailScreen() {
       <div className="space-y-4">
         <Card className="flex items-center gap-3">
           <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
-            <PawPrint className="h-8 w-8" />
+            {animal.photos && animal.photos[0] ? <img src={API_BASE_URL.replace(/\/api$/, '') + animal.photos[0].url} alt="" className="h-16 w-16 rounded-2xl object-cover" /> : <PawPrint className="h-8 w-8" />}
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">

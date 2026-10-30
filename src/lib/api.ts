@@ -41,8 +41,9 @@ export const AnimalsApi = {
   create: (payload: Partial<Animal>) => http.post<{ animal: Animal }>('/animals', payload),
   update: (id: number, payload: Partial<Animal>) => http.put<{ animal: Animal }>(`/animals/${id}`, payload),
   remove: (id: number) => http.delete<{ message: string }>(`/animals/${id}`),
-  uploadPhoto: (id: number, file: File) => {
+  uploadPhoto: (id: number, file: File, isPrimary = false) => {
     const fd = new FormData();
+    fd.append('isPrimary', String(isPrimary));
     fd.append('photo', file);
     return http.post<{ photo: unknown }>(`/animals/${id}/photos`, fd, { isFormData: true });
   },
