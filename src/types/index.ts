@@ -73,7 +73,7 @@ export interface HealthRecord {
   animal?: Pick<Animal, 'id' | 'name' | 'tagNumber'>;
 }
 
-export type BreedingStatus = 'pending' | 'confirmed' | 'pregnant' | 'calved' | 'failed';
+export type BreedingStatus = 'pending' | 'pregnant' | 'gave_birth' | 'failed';
 
 export interface Breeding {
   id: number;

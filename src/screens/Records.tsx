@@ -366,9 +366,33 @@ export function BreedingScreen() {
   const animals = useAnimalOptions();
   const { data, loading, error, reload } = useRemoteData(() => BreedingApi.list());
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [toDelete, setToDelete] = useState<{ id: number; label: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [form, setForm] = useState({ animalId: '', serviceDate: new Date().toISOString().slice(0, 10), bullName: '', expectedBirthDate: '', pregnancyStatus: 'pending', notes: '' });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  function openAdd() {
+    setEditingId(null);
+    setForm({ animalId: '', serviceDate: new Date().toISOString().slice(0, 10), bullName: '', expectedBirthDate: '', pregnancyStatus: 'pending', notes: '' });
+    setFormError(null);
+    setOpen(true);
+  }
+
+  function openEdit(b: any) {
+    setEditingId(b.id);
+    setForm({
+      animalId: String(b.animalId),
+      serviceDate: String(b.serviceDate).slice(0, 10),
+      bullName: b.bullName || '',
+      expectedBirthDate: b.expectedBirthDate ? String(b.expectedBirthDate).slice(0, 10) : '',
+      pregnancyStatus: b.pregnancyStatus || 'pending',
+      notes: b.notes || '',
+    });
+    setFormError(null);
+    setOpen(true);
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -376,11 +400,14 @@ export function BreedingScreen() {
     setFormError(null);
     if (!form.animalId) { setFormError('Select an animal.'); return; }
     setSaving(true);
+    const payload = { ...form, animalId: Number(form.animalId) };
     try {
-      await BreedingApi.create({ ...form, animalId: Number(form.animalId) } as any);
-      pushToast({ title: 'Breeding record saved', tone: 'success' });
+      if (editingId) await BreedingApi.update(editingId, payload);
+      else await BreedingApi.create(payload as any);
+      pushToast({ title: editingId ? 'Breeding record updated' : 'Breeding record saved', tone: 'success' });
       reload();
       setOpen(false);
+      setEditingId(null);
     } catch (err: any) {
       setFormError(err?.message || 'Could not save this record.');
     } finally {
@@ -388,27 +415,59 @@ export function BreedingScreen() {
     }
   }
 
+  async function confirmDelete() {
+    if (!toDelete || deleting) return;
+    setDeleting(true);
+    try {
+      await BreedingApi.remove(toDelete.id);
+      pushToast({ title: 'Breeding record deleted', tone: 'success' });
+      setToDelete(null);
+      reload();
+    } catch (err: any) {
+      pushToast({ title: 'Could not delete', description: err?.message, tone: 'error' });
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
-    <AuthedShell title="Breeding" showBack right={<AddButton onClick={() => setOpen(true)} />}>
+    <AuthedShell title="Breeding" showBack right={<AddButton onClick={openAdd} />}>
       <div className="space-y-4">
         {error && <ErrorBanner message={error} onRetry={reload} />}
         {loading && <SkeletonList rows={3} />}
-        {!loading && (data?.records.length || 0) === 0 && <EmptyState icon={<Syringe className="h-6 w-6" />} title="No breeding records yet" description="Service dates, pregnancy status and expected calving dates will appear here." action={<Button onClick={() => setOpen(true)}>Add record</Button>} />}
+        {!loading && (data?.records.length || 0) === 0 && (
+          <EmptyState icon={<Syringe className="h-6 w-6" />} title="No breeding records yet" description="Service dates, pregnancy status and expected calving dates will appear here." action={<Button onClick={openAdd}>Add record</Button>} />
+        )}
         <div className="space-y-2.5">
           {data?.records.map((b) => (
-            <Card key={b.id}>
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-slate-900">{b.animal?.name || animals.find((a) => a.id === b.animalId)?.name || `Animal #${b.animalId}`}</p>
-                <StatusPill status={b.pregnancyStatus} />
+            <Card key={b.id} className="flex items-start justify-between gap-2">
+              <button type="button" onClick={() => openEdit(b)} className="min-w-0 flex-1 text-left">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-slate-900">{b.animal?.name || animals.find((a) => a.id === b.animalId)?.name || `Animal #${b.animalId}`}</p>
+                  <StatusPill status={b.pregnancyStatus} />
+                </div>
+                <p className="mt-0.5 text-xs text-slate-500">Serviced {formatDate(b.serviceDate)}{b.bullName ? ` · Sire: ${b.bullName}` : ''}</p>
+                {b.expectedBirthDate && <p className="text-xs text-slate-500">Expected birth: {formatDate(b.expectedBirthDate)}</p>}
+              </button>
+              <div className="flex shrink-0 items-center gap-1">
+                <button type="button" onClick={() => openEdit(b)} aria-label="Edit record" className="rounded-full p-2 text-slate-400 active:scale-95">
+                  <Pencil className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Delete record"
+                  onClick={() => setToDelete({ id: b.id, label: `${b.animal?.name || 'Animal #' + b.animalId} · Serviced ${formatDate(b.serviceDate)}` })}
+                  className="rounded-full p-2 text-red-500 active:scale-95"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
-              <p className="mt-0.5 text-xs text-slate-500">Serviced {formatDate(b.serviceDate)}{b.bullName ? ` · Sire: ${b.bullName}` : ''}</p>
-              {b.expectedBirthDate && <p className="text-xs text-slate-500">Expected birth: {formatDate(b.expectedBirthDate)}</p>}
             </Card>
           ))}
         </div>
       </div>
 
-      <Sheet open={open} onClose={() => setOpen(false)} title="Add breeding record">
+      <Sheet open={open} onClose={() => { setOpen(false); setEditingId(null); }} title={editingId ? 'Edit breeding record' : 'Add breeding record'}>
         <form onSubmit={submit} className="space-y-4">
           <FormField label="Animal *">
             <Select required value={form.animalId} onChange={(e) => setForm({ ...form, animalId: e.target.value })}>
@@ -433,15 +492,28 @@ export function BreedingScreen() {
           <FormField label="Expected birth date">
             <TextInput type="date" value={form.expectedBirthDate} onChange={(e) => setForm({ ...form, expectedBirthDate: e.target.value })} />
           </FormField>
+          <FormField label="Notes">
+            <TextArea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+          </FormField>
           {formError && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">{formError}</div>}
-          <Button type="submit" fullWidth loading={saving}>Save record</Button>
+          <Button type="submit" fullWidth loading={saving}>{editingId ? 'Save changes' : 'Save record'}</Button>
         </form>
       </Sheet>
+
+      <ConfirmDialog
+        open={!!toDelete}
+        title="Delete breeding record?"
+        description={toDelete ? `${toDelete.label} will be removed permanently.` : ''}
+        confirmLabel="Delete"
+        tone="danger"
+        loading={deleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setToDelete(null)}
+      />
     </AuthedShell>
   );
 }
 
-// -------------------------------------------------------------- Finance ---
 export function FinanceScreen() {
   const { pushToast } = useApp();
   const { data, loading, error, reload } = useRemoteData(() => FinanceApi.list());
