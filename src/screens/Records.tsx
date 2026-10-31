@@ -1,14 +1,18 @@
 import { useState } from 'react';
-import { Plus, Milk as MilkIcon, Stethoscope, Syringe, Wallet, TrendingUp, TrendingDown } from 'lucide-react';
+import { Plus, Milk as MilkIcon, Stethoscope, Syringe, Wallet, TrendingUp, TrendingDown, Pencil, Trash2 } from 'lucide-react';
 import { AuthedShell } from '../components/layout';
 import {
-  Card, EmptyState, SkeletonList, Button, Sheet, FormField, TextInput, TextArea, Select, StatusPill,
+  Card, EmptyState, SkeletonList, Button, Sheet, FormField, TextInput, TextArea, Select, StatusPill, ConfirmDialog,
 } from '../components/ui';
 import { useApp } from '../context/AppContext';
 import { useRemoteData } from '../lib/useRemoteData';
 import { MilkApi, HealthApi, BreedingApi, FinanceApi, AnimalsApi } from '../lib/api';
 import { formatDate, formatKES, formatLiters } from '../lib/format';
 import { ErrorBanner } from './Home';
+
+function todayISO() {
+  return new Date().toLocaleDateString('en-CA');
+}
 
 function useAnimalOptions() {
   const { data } = useRemoteData(() => AnimalsApi.list());
@@ -21,14 +25,38 @@ export function MilkScreen() {
   const animals = useAnimalOptions();
   const { data, loading, error, reload } = useRemoteData(() => MilkApi.list());
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ animalId: '', productionDate: new Date().toISOString().slice(0, 10), quantityLiters: '', session: 'morning', notes: '' });
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [toDelete, setToDelete] = useState<{ id: number; label: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [form, setForm] = useState({ animalId: '', productionDate: todayISO(), quantityLiters: '', session: 'morning' as 'morning' | 'evening', notes: '' });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const records = data?.records || [];
-  const todayTotal = records
-    .filter((r) => String(r.productionDate).slice(0, 10) === new Date().toLocaleDateString('en-CA'))
-    .reduce((s, r) => s + Number(r.quantityLiters), 0);
+  const today = todayISO();
+  const todays = records.filter((r) => String(r.productionDate).slice(0, 10) === today);
+  const morning = todays.filter((r) => (r.session || 'morning') === 'morning').reduce((s, r) => s + Number(r.quantityLiters), 0);
+  const evening = todays.filter((r) => r.session === 'evening').reduce((s, r) => s + Number(r.quantityLiters), 0);
+
+  function openAdd() {
+    setEditingId(null);
+    setForm({ animalId: '', productionDate: todayISO(), quantityLiters: '', session: 'morning', notes: '' });
+    setFormError(null);
+    setOpen(true);
+  }
+
+  function openEdit(r: { id: number; animalId: number; productionDate: string; quantityLiters: number | string; session?: string | null; notes?: string | null }) {
+    setEditingId(r.id);
+    setForm({
+      animalId: String(r.animalId),
+      productionDate: String(r.productionDate).slice(0, 10),
+      quantityLiters: String(Number(r.quantityLiters)),
+      session: r.session === 'evening' ? 'evening' : 'morning',
+      notes: r.notes || '',
+    });
+    setFormError(null);
+    setOpen(true);
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,43 +67,99 @@ export function MilkScreen() {
       return;
     }
     setSaving(true);
+    const payload = {
+      animalId: Number(form.animalId),
+      productionDate: form.productionDate,
+      quantityLiters: Number(form.quantityLiters),
+      session: form.session,
+      notes: form.notes,
+    };
     try {
-      await MilkApi.create({ animalId: Number(form.animalId), productionDate: form.productionDate, quantityLiters: Number(form.quantityLiters), session: form.session as 'morning' | 'evening', notes: form.notes });
-      pushToast({ title: 'Milk recorded', tone: 'success' });
+      if (editingId) await MilkApi.update(editingId, payload);
+      else await MilkApi.create(payload);
+      pushToast({ title: editingId ? 'Milk record updated' : 'Milk recorded', tone: 'success' });
       reload();
       setOpen(false);
-      setForm({ animalId: '', productionDate: new Date().toISOString().slice(0, 10), quantityLiters: '', session: 'morning', notes: '' });
+      setEditingId(null);
     } catch (err: any) {
-      setFormError(err?.message?.includes('already exists') ? 'A record for this animal, date and session already exists. Edit it instead of creating a duplicate.' : err?.message || 'Could not save this record.');
+      const msg = err?.message || 'Could not save this record.';
+      setFormError(/already exists/i.test(msg)
+        ? 'A record for this animal, date and session already exists. Edit that one instead.'
+        : msg);
     } finally {
       setSaving(false);
     }
   }
 
+  async function confirmDelete() {
+    if (!toDelete || deleting) return;
+    setDeleting(true);
+    try {
+      await MilkApi.remove(toDelete.id);
+      pushToast({ title: 'Milk record deleted', tone: 'success' });
+      setToDelete(null);
+      reload();
+    } catch (err: any) {
+      pushToast({ title: 'Could not delete', description: err?.message, tone: 'error' });
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
-    <AuthedShell title="Milk Production" showBack right={<AddButton onClick={() => setOpen(true)} />}>
+    <AuthedShell title="Milk Production" showBack right={<AddButton onClick={openAdd} />}>
       <div className="space-y-4">
         <Card className="bg-emerald-700 text-white">
           <p className="text-xs font-semibold opacity-80">Today's total</p>
-          <p className="text-2xl font-extrabold">{formatLiters(todayTotal)}</p>
+          <p className="text-2xl font-extrabold">{formatLiters(morning + evening)}</p>
+          <p className="mt-1 text-xs opacity-90">Morning {formatLiters(morning)} · Evening {formatLiters(evening)}</p>
         </Card>
+
         {error && <ErrorBanner message={error} onRetry={reload} />}
         {loading && <SkeletonList rows={4} />}
-        {!loading && records.length === 0 && <EmptyState icon={<MilkIcon className="h-6 w-6" />} title="No milk records yet" description="Record your first milking session to see totals and trends." action={<Button onClick={() => setOpen(true)}>Record milk</Button>} />}
+        {!loading && records.length === 0 && (
+          <EmptyState
+            icon={<MilkIcon className="h-6 w-6" />}
+            title="No milk records yet"
+            description="Record your first milking session to see totals and trends."
+            action={<Button onClick={openAdd}>Record milk</Button>}
+          />
+        )}
+
         <div className="space-y-2.5">
           {records.map((r) => (
-            <Card key={r.id} className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-slate-900">{r.animal?.name || animals.find((a) => a.id === r.animalId)?.name || `Animal #${r.animalId}`}</p>
-                <p className="text-xs text-slate-500">{formatDate(r.productionDate)}{r.session ? ` · ${r.session === 'evening' ? 'Evening' : 'Morning'}` : ''}</p>
+            <Card key={r.id} className="flex items-center justify-between gap-3">
+              <button type="button" onClick={() => openEdit(r)} className="min-w-0 flex-1 text-left">
+                <p className="truncate text-sm font-semibold text-slate-900">
+                  {r.animal?.name || animals.find((a) => a.id === r.animalId)?.name || `Animal #${r.animalId}`}
+                </p>
+                <p className="text-xs text-slate-500">
+                  {formatDate(r.productionDate)} · <span className="capitalize">{r.session || 'morning'}</span>
+                </p>
+              </button>
+              <span className="shrink-0 text-sm font-bold text-emerald-700">{formatLiters(r.quantityLiters)}</span>
+              <div className="flex shrink-0 items-center gap-1">
+                <button type="button" onClick={() => openEdit(r)} aria-label="Edit record" className="rounded-full p-2 text-slate-400 active:scale-95">
+                  <Pencil className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Delete record"
+                  onClick={() => setToDelete({
+                    id: r.id,
+                    label: `${r.animal?.name || `Animal #${r.animalId}`} · ${formatDate(r.productionDate)} · ${r.session || 'morning'}`,
+                  })}
+                  className="rounded-full p-2 text-red-500 active:scale-95"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
-              <span className="text-sm font-bold text-emerald-700">{formatLiters(r.quantityLiters)}</span>
             </Card>
           ))}
         </div>
       </div>
 
-      <Sheet open={open} onClose={() => setOpen(false)} title="Record milk production">
+      <Sheet open={open} onClose={() => { setOpen(false); setEditingId(null); }} title={editingId ? 'Edit milk record' : 'Record milk production'}>
         <form onSubmit={submit} className="space-y-4">
           <FormField label="Animal *">
             <Select required value={form.animalId} onChange={(e) => setForm({ ...form, animalId: e.target.value })}>
@@ -84,18 +168,18 @@ export function MilkScreen() {
             </Select>
           </FormField>
           <FormField label="Date *">
-            <TextInput type="date" required max={new Date().toISOString().slice(0, 10)} value={form.productionDate} onChange={(e) => setForm({ ...form, productionDate: e.target.value })} />
+            <TextInput type="date" required max={todayISO()} value={form.productionDate} onChange={(e) => setForm({ ...form, productionDate: e.target.value })} />
           </FormField>
           <FormField label="Milking session *">
             <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
-              {(['morning', 'evening'] as const).map((s) => (
+              {(['morning', 'evening'] as const).map((sess) => (
                 <button
-                  key={s}
+                  key={sess}
                   type="button"
-                  onClick={() => setForm({ ...form, session: s })}
-                  className={`flex-1 rounded-lg py-2 text-xs font-bold capitalize transition ${form.session === s ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-500'}`}
+                  onClick={() => setForm({ ...form, session: sess })}
+                  className={`flex-1 rounded-lg py-2 text-xs font-bold capitalize transition ${form.session === sess ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-500'}`}
                 >
-                  {s}
+                  {sess}
                 </button>
               ))}
             </div>
@@ -107,14 +191,24 @@ export function MilkScreen() {
             <TextArea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
           </FormField>
           {formError && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">{formError}</div>}
-          <Button type="submit" fullWidth loading={saving}>Save record</Button>
+          <Button type="submit" fullWidth loading={saving}>{editingId ? 'Save changes' : 'Save record'}</Button>
         </form>
       </Sheet>
+
+      <ConfirmDialog
+        open={!!toDelete}
+        title="Delete milk record?"
+        description={toDelete ? `${toDelete.label} will be removed permanently.` : ''}
+        confirmLabel="Delete"
+        tone="danger"
+        loading={deleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setToDelete(null)}
+      />
     </AuthedShell>
   );
 }
 
-// -------------------------------------------------------------- Health ----
 export function HealthScreen() {
   const { pushToast } = useApp();
   const animals = useAnimalOptions();
