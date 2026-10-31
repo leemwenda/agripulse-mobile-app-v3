@@ -131,6 +131,24 @@ export const NotificationsApi = {
   list: () => http.get<{ notifications: FarmNotification[]; unread: number }>('/notifications'),
 };
 
+// ---- Workers: /api/workers (farm owner manages; server enforces roles)
+export interface FarmWorker {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  isActive: boolean;
+  createdAt: string;
+}
+export const WorkersApi = {
+  list: () => http.get<{ workers: FarmWorker[] }>('/workers'),
+  create: (payload: { name: string; email: string; password: string }) =>
+    http.post<{ worker: FarmWorker }>('/workers', { ...payload, status: 'active' }),
+  update: (id: number, payload: { name: string; email: string; status: 'active' | 'inactive'; password?: string }) =>
+    http.put<{ worker: FarmWorker }>(`/workers/${id}`, payload),
+  remove: (id: number) => http.delete<{ message: string }>(`/workers/${id}`),
+};
+
 export function clearSession() {
   tokenStore.clear();
 }

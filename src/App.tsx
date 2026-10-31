@@ -11,6 +11,7 @@ import { MilkScreen, HealthScreen, BreedingScreen, FinanceScreen } from './scree
 import { AIAdvisorScreen } from './screens/AIAdvisor';
 import { MarketplaceScreen, ListingDetailScreen, CreateListingScreen } from './screens/Marketplace';
 import { PassportScreen } from './screens/Passport';
+import { WorkersScreen } from './screens/Workers';
 import { MoreScreen, NotificationsScreen, ProfileScreen, SettingsScreen, PlaceholderScreen } from './screens/More';
 
 function PrivateRoute({ children }: { children: React.ReactElement }) {
@@ -65,7 +66,7 @@ function AppRoutes() {
       <Route path="/more/profile" element={<PrivateRoute><ProfileScreen /></PrivateRoute>} />
       <Route path="/more/settings" element={<PrivateRoute><SettingsScreen /></PrivateRoute>} />
       <Route path="/more/reports" element={<PrivateRoute><PlaceholderScreen title="Reports" description="Exportable milk, health, breeding and financial reports from the live backend will appear here." /></PrivateRoute>} />
-      <Route path="/more/workers" element={<PrivateRoute><PlaceholderScreen title="Farm Workers" description="Manage worker accounts and permissions for your farm." /></PrivateRoute>} />
+      <Route path="/more/workers" element={<PrivateRoute><WorkersScreen /></PrivateRoute>} />
       <Route path="/more/help" element={<PrivateRoute><PlaceholderScreen title="Help & Support" description="Contact AgriPulse support or report an issue from this screen." /></PrivateRoute>} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
