@@ -30,6 +30,8 @@
 // succeed. The app falls back to a clearly labeled Demo Mode in that case.
 // ============================================================================
 
+import { Preferences } from '@capacitor/preferences';
+
 const DEFAULT_BASE_URL = 'https://agripulse.me/api';
 export const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || DEFAULT_BASE_URL;
 
@@ -52,27 +54,35 @@ export class ApiError extends Error {
 // Token storage: on native Android (Capacitor) this should use
 // @capacitor/preferences (or secure storage) instead of localStorage.
 // Abstracted here so swapping storage backends touches one place only.
+// Token storage — backed by @capacitor/preferences which uses Keychain on
+// iOS, SharedPreferences on Android, and localStorage on web.
+//
+// The synchronous get() returns a cached value. Callers must await
+// tokenStore.init() once at app startup before calling get().
+let cachedToken: string | null = null;
+let initialized = false;
+
 export const tokenStore = {
-  get(): string | null {
+  async init(): Promise<void> {
+    if (initialized) return;
+    initialized = true;
     try {
-      return localStorage.getItem(TOKEN_KEY);
+      const { value } = await Preferences.get({ key: TOKEN_KEY });
+      cachedToken = value ?? null;
     } catch {
-      return null;
+      cachedToken = null;
     }
+  },
+  get(): string | null {
+    return cachedToken;
   },
   set(token: string) {
-    try {
-      localStorage.setItem(TOKEN_KEY, token);
-    } catch {
-      /* ignore quota / privacy-mode errors */
-    }
+    cachedToken = token;
+    Preferences.set({ key: TOKEN_KEY, value: token }).catch(() => {});
   },
   clear() {
-    try {
-      localStorage.removeItem(TOKEN_KEY);
-    } catch {
-      /* noop */
-    }
+    cachedToken = null;
+    Preferences.remove({ key: TOKEN_KEY }).catch(() => {});
   },
 };
 

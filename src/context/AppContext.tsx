@@ -75,6 +75,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setApiReachable(reachable);
 
       sessionStorage.removeItem('agripulse.mobile.mode');
+      await tokenStore.init();
       if (tokenStore.get()) {
         try {
           const res = await AuthApi.me();

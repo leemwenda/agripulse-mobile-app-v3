@@ -1,0 +1,53 @@
+PODS:
+  - Capacitor (8.6.0):
+    - CapacitorCordova
+  - CapacitorApp (8.1.2):
+    - Capacitor
+  - CapacitorBrowser (8.0.5):
+    - Capacitor
+  - CapacitorCamera (8.2.6):
+    - Capacitor
+    - IONCameraLib (~> 2.0.0)
+  - CapacitorCordova (8.6.0)
+  - CapacitorPreferences (8.0.1):
+    - Capacitor
+  - IONCameraLib (2.0.0)
+
+DEPENDENCIES:
+  - "Capacitor (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
+  - "CapacitorBrowser (from `../../node_modules/@capacitor/browser`)"
+  - "CapacitorCamera (from `../../node_modules/@capacitor/camera`)"
+  - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorPreferences (from `../../node_modules/@capacitor/preferences`)"
+
+SPEC REPOS:
+  trunk:
+    - IONCameraLib
+
+EXTERNAL SOURCES:
+  Capacitor:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorApp:
+    :path: "../../node_modules/@capacitor/app"
+  CapacitorBrowser:
+    :path: "../../node_modules/@capacitor/browser"
+  CapacitorCamera:
+    :path: "../../node_modules/@capacitor/camera"
+  CapacitorCordova:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorPreferences:
+    :path: "../../node_modules/@capacitor/preferences"
+
+SPEC CHECKSUMS:
+  Capacitor: c028c437d3074b3668803ed7f2e63fb28bbf9820
+  CapacitorApp: 542f92c179e3e08ed5d787846bcfa1b377e9745e
+  CapacitorBrowser: c54567fdaba0ddb67dad113ad12b8ccb910b0a30
+  CapacitorCamera: 2019e4a5a860c4d966eb685a40f53722277f0018
+  CapacitorCordova: 922f0a94dae286165215f0c7cf16fbde662d5ee4
+  CapacitorPreferences: 0fa33b3affebf12d96358b491ed7c2b39bec3270
+  IONCameraLib: 729cae576e1a952602ce750a9790b6dc7d7e2e95
+
+PODFILE CHECKSUM: 5f83ea35233be44737614d0dd4e9c10b9b84345f
+
+COCOAPODS: 1.17.0

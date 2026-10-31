@@ -1,0 +1,112 @@
+name: iOS TestFlight
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Build web bundle
+        run: npm run build
+
+      - name: Sync iOS project
+        run: |
+          npm install @capacitor/cli @capacitor/core @capacitor/ios@8 @capacitor/preferences@8 --no-audit --no-fund
+          npx cap sync ios
+
+      - name: CocoaPods install
+        run: |
+          cd ios/App
+          pod install --repo-update
+
+      - name: Bump build number from run number
+        run: |
+          cd ios/App
+          xcrun agvtool new-version -all ${GITHUB_RUN_NUMBER}
+          xcrun agvtool new-marketing-version 1.0
+
+      - name: Import signing certificate
+        if: ${{ secrets.IOS_CERT_P12_BASE64 != '' }}
+        env:
+          CERT_B64: ${{ secrets.IOS_CERT_P12_BASE64 }}
+          CERT_PASS: ${{ secrets.IOS_CERT_P12_PASSWORD }}
+          PROFILE_B64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          echo "$CERT_B64" | base64 --decode > /tmp/cert.p12
+          echo "$PROFILE_B64" | base64 --decode > /tmp/profile.mobileprovision
+          security create-keychain -p actions temp.keychain
+          security default-keychain -s temp.keychain
+          security unlock-keychain -p actions temp.keychain
+          security import /tmp/cert.p12 -k temp.keychain -P "$CERT_PASS" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k actions temp.keychain
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp /tmp/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+
+      - name: Archive app
+        if: ${{ secrets.IOS_CERT_P12_BASE64 != '' }}
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -archivePath $RUNNER_TEMP/App.xcarchive \
+            -allowProvisioningUpdates \
+            archive
+
+      - name: Export IPA
+        if: ${{ secrets.IOS_CERT_P12_BASE64 != '' }}
+        run: |
+          cd ios/App
+          cat > ExportOptions.plist << 'EXPORT'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>destination</key>
+            <string>upload</string>
+            <key>uploadSymbols</key>
+            <true/>
+          </dict>
+          </plist>
+          EXPORT
+          xcodebuild -exportArchive \
+            -archivePath $RUNNER_TEMP/App.xcarchive \
+            -exportPath $RUNNER_TEMP/ipa \
+            -exportOptionsPlist ExportOptions.plist \
+            -allowProvisioningUpdates
+
+      - name: Upload to TestFlight
+        if: ${{ secrets.IOS_CERT_P12_BASE64 != '' }}
+        run: |
+          xcrun altool --upload-app \
+            --type ios \
+            --file $RUNNER_TEMP/ipa/App.ipa \
+            --apiKey ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }} \
+            --apiIssuer ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+
+      - name: Warn when signing secrets are missing
+        if: ${{ secrets.IOS_CERT_P12_BASE64 == '' }}
+        run: |
+          echo "::notice ::Signing secrets not configured yet. iOS project synced and verified. Add secrets after Apple Developer approval to enable TestFlight uploads."
+
+      - name: Upload archive as artifact (unsigned, for inspection)
+        if: ${{ secrets.IOS_CERT_P12_BASE64 == '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-project-${{ github.run_number }}
+          path: ios/
+          retention-days: 7

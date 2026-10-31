@@ -16,6 +16,10 @@ const config: CapacitorConfig = {
   android: {
     allowMixedContent: false,
   },
+  ios: {
+    scheme: 'agripulse',
+    contentInset: 'always',
+  },
   server: {
     // Use HTTPS scheme for the WebView origin so that secure cookies/APIs
     // behave consistently with production. Do NOT point this at a developer
