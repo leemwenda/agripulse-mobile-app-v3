@@ -21,7 +21,7 @@ export interface AuthUser {
 
 export type AnimalGender = 'male' | 'female';
 export type AnimalStatus = 'active' | 'sold' | 'deceased' | 'archived';
-export type AnimalCategory = 'calf' | 'heifer' | 'milking_cow' | 'dry_cow' | 'bull' | 'other';
+export type AnimalCategory = 'calf' | 'heifer' | 'cow' | 'bull_calf' | 'young_bull' | 'bull';
 
 export interface AnimalPhoto {
   id: number;
