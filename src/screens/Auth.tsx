@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Loader2 } from 'lucide-react';
 import { AuthLayout } from '../components/layout';
 import { Button, FormField, TextInput, ToastStack, BrandLogo } from '../components/ui';
