@@ -40,7 +40,7 @@ export function FarmListScreen() {
       }
     >
       <div className="space-y-4">
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-5 gap-2 md:mx-auto md:max-w-2xl md:gap-4">
           <ShortcutButton icon={Milk} label="Milk" onClick={() => navigate('/farm/milk')} />
           <ShortcutButton icon={Stethoscope} label="Health" onClick={() => navigate('/farm/health')} />
           <ShortcutButton icon={Syringe} label="Breeding" onClick={() => navigate('/farm/breeding')} />

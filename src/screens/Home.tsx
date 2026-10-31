@@ -75,7 +75,7 @@ export function HomeScreen() {
           <>
             <section>
               <SectionHeader title="Farm snapshot" />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 <StatCard label="Registered animals" value={data.stats.totalAnimals} hint={`${data.stats.femaleAnimals} female · ${data.stats.maleAnimals} male`} onClick={() => navigate('/farm')} />
                 <StatCard label="Milk today" value={formatLiters(data.stats.todayMilk)} hint={`${formatLiters(data.stats.monthMilk)} this month`} onClick={() => navigate('/farm/milk')} />
                 <StatCard label="Pregnant animals" value={data.stats.activePregnant} hint="Active pregnancies" onClick={() => navigate('/farm/breeding')} />
@@ -88,7 +88,7 @@ export function HomeScreen() {
               {priorities.length === 0 ? (
                 <EmptyState title="All caught up" description="No urgent items right now. Great work keeping records up to date." />
               ) : (
-                <div className="space-y-2.5">
+                <div className="space-y-2.5 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
                   {priorities.map((p) => (
                     <Card key={p.id} onClick={p.action} className="flex items-start gap-3">
                       <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${p.tone === 'danger' ? 'bg-red-100 text-red-600' : p.tone === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-sky-100 text-sky-700'}`}>
@@ -107,7 +107,7 @@ export function HomeScreen() {
 
             <section>
               <SectionHeader title="Quick actions" />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 <QuickAction icon={PawPrint} label="Register animal" onClick={() => navigate('/farm/new')} />
                 <QuickAction icon={Milk} label="Record milk" onClick={() => navigate('/farm/milk')} />
                 <QuickAction icon={Stethoscope} label="Record treatment" onClick={() => navigate('/farm/health')} />
@@ -120,7 +120,7 @@ export function HomeScreen() {
             {data.recentHealth.length > 0 && (
               <section>
                 <SectionHeader title="Recent health events" action={<button onClick={() => navigate('/farm/health')} className="text-xs font-semibold text-emerald-700">View all</button>} />
-                <div className="space-y-2.5">
+                <div className="space-y-2.5 md:grid md:grid-cols-3 md:gap-3 md:space-y-0">
                   {data.recentHealth.slice(0, 3).map((h) => (
                     <Card key={h.id}>
                       <p className="text-sm font-semibold text-slate-900">{h.animal?.name || 'Animal'} · {h.condition}</p>
