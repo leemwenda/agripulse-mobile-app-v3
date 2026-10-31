@@ -198,7 +198,16 @@ export function RegisterScreen() {
         </FormField>
         {error && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">{error}</div>}
         <Button type="submit" fullWidth loading={loading}>Create account</Button>
-        <button type="button" onClick={() => navigate('/login')} className="w-full text-center text-sm font-semibold text-emerald-700">
+        
+        <div className="pt-2">
+          <div className="relative my-2 text-center text-xs text-slate-400">
+            <span className="relative z-10 bg-slate-50 px-2">or</span>
+            <div className="absolute inset-x-0 top-1/2 h-px bg-slate-200" />
+          </div>
+          <GoogleButton />
+        </div>
+
+        <button type="button" onClick={() => navigate('/login')} className="mt-4 w-full text-center text-sm font-semibold text-emerald-700">
           Already have an account? Sign in
         </button>
       </form>
