@@ -402,7 +402,7 @@ export function BreedingScreen() {
     setSaving(true);
     const payload = { ...form, animalId: Number(form.animalId) };
     try {
-      if (editingId) await BreedingApi.update(editingId, payload);
+      if (editingId) await BreedingApi.update(editingId, payload as any);
       else await BreedingApi.create(payload as any);
       pushToast({ title: editingId ? 'Breeding record updated' : 'Breeding record saved', tone: 'success' });
       reload();
