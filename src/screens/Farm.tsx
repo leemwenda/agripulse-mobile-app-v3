@@ -1,12 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Search, Plus, PawPrint, Milk, Stethoscope, Syringe, Wallet, QrCode, Camera, ChevronRight, Tag } from 'lucide-react';
+import { Search, Plus, PawPrint, Milk, Stethoscope, Syringe, Wallet, QrCode, ChevronRight, Tag } from 'lucide-react';
 import { AuthedShell } from '../components/layout';
 import {
-  Card, EmptyState, SkeletonList, Button, FormField, TextInput, Select,
-  StatusPill, Badge, TextArea,
+  Card, EmptyState, SkeletonList, Button, TextInput, Select,
+  StatusPill, Badge,
 } from '../components/ui';
-import { useApp } from '../context/AppContext';
 import { useRemoteData } from '../lib/useRemoteData';
 import { AnimalsApi, MilkApi, HealthApi, BreedingApi } from '../lib/api';
 import { ageFromDOB, formatDate, formatLiters } from '../lib/format';
