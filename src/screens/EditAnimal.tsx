@@ -8,16 +8,6 @@ import { AnimalsApi } from '../lib/api';
 import type { Animal } from '../types';
 import { ErrorBanner } from './Home';
 
-type Category = NonNullable<Animal['category']>;
-const CATEGORIES: { value: Category; label: string }[] = [
-  { value: 'calf', label: 'Calf' },
-  { value: 'heifer', label: 'Heifer' },
-  { value: 'cow', label: 'Cow' },
-  { value: 'bull_calf', label: 'Bull calf' },
-  { value: 'young_bull', label: 'Young bull' },
-  { value: 'bull', label: 'Bull' },
-];
-
 export function EditAnimalScreen() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -28,7 +18,7 @@ export function EditAnimalScreen() {
 
   const [form, setForm] = useState({
     name: '', tagNumber: '', breed: '', gender: 'female', dateOfBirth: '',
-    color: '', notes: '', status: 'active', category: '',
+    color: '', notes: '', status: 'active',
   });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -44,7 +34,6 @@ export function EditAnimalScreen() {
       color: animal.color || '',
       notes: animal.notes || '',
       status: animal.status,
-      category: animal.category || '',
     });
   }, [animal]);
 
@@ -74,7 +63,6 @@ export function EditAnimalScreen() {
         color: form.color.trim() || null,
         notes: form.notes.trim() || null,
         status: form.status as Animal['status'],
-        category: (form.category || null) as Animal['category'],
       });
       pushToast({ title: 'Animal updated', tone: 'success' });
       navigate(`/farm/${animalId}`, { replace: true });
@@ -103,11 +91,10 @@ export function EditAnimalScreen() {
             <option value="male">Male</option>
           </Select>
         </FormField>
-        <FormField label="Category">
-          <Select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
-            <option value="">Not set</option>
-            {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-          </Select>
+        <FormField label="Category" hint="Set automatically from gender and age">
+          <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm capitalize text-slate-600">
+            {animal.category ? animal.category.replace('_', ' ') : 'Not yet assigned'}
+          </p>
         </FormField>
         <FormField label="Status">
           <Select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
