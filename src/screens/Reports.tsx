@@ -14,37 +14,44 @@ export function ReportsScreen() {
 
   return (
     <AuthedShell title="Reports" showBack>
-      <div className="space-y-4">
+      <div className="space-y-4 pb-8">
+        <Card className="bg-emerald-700 text-white">
+          <p className="text-sm font-bold">Milk Production</p>
+          <p className="mt-1 text-xs opacity-80">6-month trend and top producers</p>
+        </Card>
+
         {error && <ErrorBanner message={error} onRetry={reload} />}
-        {loading && <SkeletonList rows={3} />}
-        {!loading && !error && trend.length === 0 && top.length === 0 && (
+        {loading && <SkeletonList rows={4} />}
+
+        {!loading && trend.length === 0 && top.length === 0 && (
           <EmptyState title="No milk data yet" description="Record milk production to see reports here." />
         )}
+
         {trend.length > 0 && (
-          <Card className="space-y-3">
-            <p className="text-sm font-bold text-slate-900">Milk per month</p>
-            {trend.map((t) => (
-              <div key={t.month}>
-                <div className="flex justify-between text-xs text-slate-600">
-                  <span>{monthName(t.month)}</span>
-                  <span className="font-semibold">{formatLiters(Number(t.total))}</span>
+          <Card>
+            <p className="mb-3 text-sm font-bold text-slate-900">Trend (Litres)</p>
+            <div className="flex items-end gap-2 h-32">
+              {trend.map((t) => (
+                <div key={t.month} className="flex flex-1 flex-col items-center justify-end h-full gap-1">
+                  <div className="w-full rounded-t-sm bg-emerald-500" style={{ height: `${(Number(t.total) / max) * 100}%` }} />
+                  <span className="text-[10px] text-slate-500">{monthName(t.month)}</span>
                 </div>
-                <div className="mt-1 h-2 rounded-full bg-slate-100">
-                  <div className="h-2 rounded-full bg-emerald-600" style={{ width: `${(Number(t.total) / max) * 100}%` }} />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </Card>
         )}
+
         {top.length > 0 && (
-          <Card className="space-y-2">
-            <p className="text-sm font-bold text-slate-900">Top producers this month</p>
-            {top.map((p, i) => (
-              <div key={p.animalId} className="flex items-center justify-between text-sm">
-                <span className="text-slate-700">{i + 1}. {p.animal?.name || `Animal #${p.animalId}`}</span>
-                <span className="font-semibold text-emerald-700">{formatLiters(Number(p._sum.quantityLiters || 0))}</span>
-              </div>
-            ))}
+          <Card>
+            <p className="mb-2 text-sm font-bold text-slate-900">Top Producers (This month)</p>
+            <div className="space-y-2">
+              {top.map((p) => (
+                <div key={p.animalId} className="flex items-center justify-between border-b border-slate-100 pb-2 last:border-0 last:pb-0">
+                  <span className="text-sm text-slate-700">{p.animal?.name || 'Animal'} <span className="text-xs text-slate-400">({p.animal?.tagNumber})</span></span>
+                  <span className="text-sm font-bold text-emerald-700">{formatLiters(Number(p._sum.quantityLiters || 0))}</span>
+                </div>
+              ))}
+            </div>
           </Card>
         )}
       </div>
