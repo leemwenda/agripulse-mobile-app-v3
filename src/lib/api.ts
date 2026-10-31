@@ -80,6 +80,7 @@ export const BreedingApi = {
   },
   create: (payload: Partial<Breeding>) => http.post<{ record: Breeding }>('/breeding', payload),
   update: (id: number, payload: Partial<Breeding>) => http.put<{ record: Breeding }>(`/breeding/${id}`, payload),
+  remove: (id: number) => http.delete<{ message: string }>(`/breeding/${id}`),
 };
 
 // ---- Finance: /api/financial ------------------------------------------------
@@ -88,7 +89,9 @@ export const FinanceApi = {
     const qs = new URLSearchParams(params as Record<string, string>).toString();
     return http.get<{ transactions: FinancialTransaction[]; total: number; summary: { income: string | number; expense: string | number; profit: number } }>(`/financial${qs ? `?${qs}` : ''}`);
   },
-  create: (payload: Partial<FinancialTransaction>) => http.post<{ record: FinancialTransaction }>('/financial', payload),
+  create: (payload: Partial<FinancialTransaction>) => http.post<{ transaction: FinancialTransaction }>('/financial', payload),
+  update: (id: number, payload: Partial<FinancialTransaction>) => http.put<{ transaction: FinancialTransaction }>(`/financial/${id}`, payload),
+  remove: (id: number) => http.delete<{ message: string }>(`/financial/${id}`),
 };
 
 // ---- Marketplace: /api/market (public browse uses optionalAuth) -----------

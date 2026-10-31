@@ -214,9 +214,34 @@ export function HealthScreen() {
   const animals = useAnimalOptions();
   const { data, loading, error, reload } = useRemoteData(() => HealthApi.list());
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [toDelete, setToDelete] = useState<{ id: number; label: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [form, setForm] = useState({ animalId: '', recordDate: new Date().toISOString().slice(0, 10), condition: '', treatment: '', doctorName: '', vaccination: '', notes: '' });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  function openAdd() {
+    setEditingId(null);
+    setForm({ animalId: '', recordDate: new Date().toISOString().slice(0, 10), condition: '', treatment: '', doctorName: '', vaccination: '', notes: '' });
+    setFormError(null);
+    setOpen(true);
+  }
+
+  function openEdit(h: { id: number; animalId: number; recordDate: string; condition: string; treatment?: string | null; doctorName?: string | null; vaccination?: string | null; notes?: string | null }) {
+    setEditingId(h.id);
+    setForm({
+      animalId: String(h.animalId),
+      recordDate: String(h.recordDate).slice(0, 10),
+      condition: h.condition || '',
+      treatment: h.treatment || '',
+      doctorName: h.doctorName || '',
+      vaccination: h.vaccination || '',
+      notes: h.notes || '',
+    });
+    setFormError(null);
+    setOpen(true);
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -227,11 +252,14 @@ export function HealthScreen() {
       return;
     }
     setSaving(true);
+    const payload = { ...form, animalId: Number(form.animalId) } as any;
     try {
-      await HealthApi.create({ ...form, animalId: Number(form.animalId) } as any);
-      pushToast({ title: 'Health record saved', tone: 'success' });
+      if (editingId) await HealthApi.update(editingId, payload);
+      else await HealthApi.create(payload);
+      pushToast({ title: editingId ? 'Health record updated' : 'Health record saved', tone: 'success' });
       reload();
       setOpen(false);
+      setEditingId(null);
     } catch (err: any) {
       setFormError(err?.message || 'Could not save this record.');
     } finally {
@@ -239,27 +267,59 @@ export function HealthScreen() {
     }
   }
 
+  async function confirmDelete() {
+    if (!toDelete || deleting) return;
+    setDeleting(true);
+    try {
+      await HealthApi.remove(toDelete.id);
+      pushToast({ title: 'Health record deleted', tone: 'success' });
+      setToDelete(null);
+      reload();
+    } catch (err: any) {
+      pushToast({ title: 'Could not delete', description: err?.message, tone: 'error' });
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
-    <AuthedShell title="Animal Health" showBack right={<AddButton onClick={() => setOpen(true)} />}>
+    <AuthedShell title="Animal Health" showBack right={<AddButton onClick={openAdd} />}>
       <div className="space-y-4">
         <div className="rounded-xl border border-sky-200 bg-sky-50 p-3 text-xs text-sky-800">
           Records entered here are farmer observations. They do not replace a professional veterinary diagnosis — contact a vet for suspected serious illness.
         </div>
         {error && <ErrorBanner message={error} onRetry={reload} />}
         {loading && <SkeletonList rows={3} />}
-        {!loading && (data?.records.length || 0) === 0 && <EmptyState icon={<Stethoscope className="h-6 w-6" />} title="No health records yet" description="Treatments, symptoms and vaccinations you record will appear here." action={<Button onClick={() => setOpen(true)}>Add record</Button>} />}
+        {!loading && (data?.records.length || 0) === 0 && (
+          <EmptyState icon={<Stethoscope className="h-6 w-6" />} title="No health records yet" description="Treatments, symptoms and vaccinations you record will appear here." action={<Button onClick={openAdd}>Add record</Button>} />
+        )}
         <div className="space-y-2.5">
           {data?.records.map((h) => (
-            <Card key={h.id}>
-              <p className="text-sm font-semibold text-slate-900">{h.animal?.name || animals.find((a) => a.id === h.animalId)?.name || `Animal #${h.animalId}`} · {h.condition}</p>
-              <p className="mt-0.5 text-xs text-slate-500">{formatDate(h.recordDate)}{h.doctorName ? ` · ${h.doctorName}` : ''}</p>
-              {h.treatment && <p className="mt-1 text-xs text-slate-600">Treatment: {h.treatment}</p>}
+            <Card key={h.id} className="flex items-start justify-between gap-2">
+              <button type="button" onClick={() => openEdit(h)} className="min-w-0 flex-1 text-left">
+                <p className="text-sm font-semibold text-slate-900">{h.animal?.name || animals.find((a) => a.id === h.animalId)?.name || `Animal #${h.animalId}`} · {h.condition}</p>
+                <p className="mt-0.5 text-xs text-slate-500">{formatDate(h.recordDate)}{h.doctorName ? ` · ${h.doctorName}` : ''}</p>
+                {h.treatment && <p className="mt-1 text-xs text-slate-600">Treatment: {h.treatment}</p>}
+              </button>
+              <div className="flex shrink-0 items-center gap-1">
+                <button type="button" onClick={() => openEdit(h)} aria-label="Edit record" className="rounded-full p-2 text-slate-400 active:scale-95">
+                  <Pencil className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Delete record"
+                  onClick={() => setToDelete({ id: h.id, label: `${h.animal?.name || 'Animal #' + h.animalId} · ${h.condition}` })}
+                  className="rounded-full p-2 text-red-500 active:scale-95"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             </Card>
           ))}
         </div>
       </div>
 
-      <Sheet open={open} onClose={() => setOpen(false)} title="Add health record">
+      <Sheet open={open} onClose={() => { setOpen(false); setEditingId(null); }} title={editingId ? 'Edit health record' : 'Add health record'}>
         <form onSubmit={submit} className="space-y-4">
           <FormField label="Animal *">
             <Select required value={form.animalId} onChange={(e) => setForm({ ...form, animalId: e.target.value })}>
@@ -271,7 +331,7 @@ export function HealthScreen() {
             <TextInput type="date" required max={new Date().toISOString().slice(0, 10)} value={form.recordDate} onChange={(e) => setForm({ ...form, recordDate: e.target.value })} />
           </FormField>
           <FormField label="Condition / reason *">
-            <TextInput required placeholder="e.g. Lameness, routine check-up" value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value })} />
+            <TextInput required value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value })} />
           </FormField>
           <FormField label="Treatment given">
             <TextArea value={form.treatment} onChange={(e) => setForm({ ...form, treatment: e.target.value })} />
@@ -283,14 +343,24 @@ export function HealthScreen() {
             <TextInput value={form.doctorName} onChange={(e) => setForm({ ...form, doctorName: e.target.value })} />
           </FormField>
           {formError && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">{formError}</div>}
-          <Button type="submit" fullWidth loading={saving}>Save record</Button>
+          <Button type="submit" fullWidth loading={saving}>{editingId ? 'Save changes' : 'Save record'}</Button>
         </form>
       </Sheet>
+
+      <ConfirmDialog
+        open={!!toDelete}
+        title="Delete health record?"
+        description={toDelete ? `${toDelete.label} will be removed permanently.` : ''}
+        confirmLabel="Delete"
+        tone="danger"
+        loading={deleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setToDelete(null)}
+      />
     </AuthedShell>
   );
 }
 
-// ------------------------------------------------------------- Breeding ---
 export function BreedingScreen() {
   const { pushToast } = useApp();
   const animals = useAnimalOptions();
@@ -376,6 +446,9 @@ export function FinanceScreen() {
   const { pushToast } = useApp();
   const { data, loading, error, reload } = useRemoteData(() => FinanceApi.list());
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [toDelete, setToDelete] = useState<{ id: number; label: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [form, setForm] = useState({ type: 'income', category: '', amount: '', description: '', transactionDate: new Date().toISOString().slice(0, 10) });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -383,6 +456,26 @@ export function FinanceScreen() {
   const records = data?.transactions || [];
   const income = Number(data?.summary?.income ?? 0);
   const expense = Number(data?.summary?.expense ?? 0);
+
+  function openAdd() {
+    setEditingId(null);
+    setForm({ type: 'income', category: '', amount: '', description: '', transactionDate: new Date().toISOString().slice(0, 10) });
+    setFormError(null);
+    setOpen(true);
+  }
+
+  function openEdit(r: { id: number; type: string; category: string; amount: number | string; description?: string | null; transactionDate: string }) {
+    setEditingId(r.id);
+    setForm({
+      type: r.type === 'expense' ? 'expense' : 'income',
+      category: r.category || '',
+      amount: String(Number(r.amount)),
+      description: r.description || '',
+      transactionDate: String(r.transactionDate).slice(0, 10),
+    });
+    setFormError(null);
+    setOpen(true);
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -393,11 +486,14 @@ export function FinanceScreen() {
       return;
     }
     setSaving(true);
+    const payload = { ...form, amount: Number(form.amount) } as any;
     try {
-      await FinanceApi.create({ ...form, amount: Number(form.amount) } as any);
-      pushToast({ title: 'Transaction recorded', tone: 'success' });
+      if (editingId) await FinanceApi.update(editingId, payload);
+      else await FinanceApi.create(payload);
+      pushToast({ title: editingId ? 'Transaction updated' : 'Transaction recorded', tone: 'success' });
       reload();
       setOpen(false);
+      setEditingId(null);
     } catch (err: any) {
       setFormError(err?.message || 'Could not save this transaction.');
     } finally {
@@ -405,8 +501,23 @@ export function FinanceScreen() {
     }
   }
 
+  async function confirmDelete() {
+    if (!toDelete || deleting) return;
+    setDeleting(true);
+    try {
+      await FinanceApi.remove(toDelete.id);
+      pushToast({ title: 'Transaction deleted', tone: 'success' });
+      setToDelete(null);
+      reload();
+    } catch (err: any) {
+      pushToast({ title: 'Could not delete', description: err?.message, tone: 'error' });
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
-    <AuthedShell title="Farm Finance" showBack right={<AddButton onClick={() => setOpen(true)} />}>
+    <AuthedShell title="Farm Finance" showBack right={<AddButton onClick={openAdd} />}>
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <Card className="flex flex-col gap-1">
@@ -421,23 +532,38 @@ export function FinanceScreen() {
         <p className="text-center text-xs text-slate-400">Totals reflect recorded transactions only, not projections.</p>
         {error && <ErrorBanner message={error} onRetry={reload} />}
         {loading && <SkeletonList rows={3} />}
-        {!loading && records.length === 0 && <EmptyState icon={<Wallet className="h-6 w-6" />} title="No transactions yet" description="Record milk sales, livestock sales and farm expenses to see your income and expenses here." action={<Button onClick={() => setOpen(true)}>Add transaction</Button>} />}
+        {!loading && records.length === 0 && (
+          <EmptyState icon={<Wallet className="h-6 w-6" />} title="No transactions yet" description="Record milk sales, livestock sales and farm expenses to see your income and expenses here." action={<Button onClick={openAdd}>Add transaction</Button>} />
+        )}
         <div className="space-y-2.5">
           {records.map((r) => (
-            <Card key={r.id} className="flex items-center justify-between">
-              <div>
+            <Card key={r.id} className="flex items-center justify-between gap-2">
+              <button type="button" onClick={() => openEdit(r)} className="min-w-0 flex-1 text-left">
                 <p className="text-sm font-semibold text-slate-900">{r.category}</p>
                 <p className="text-xs text-slate-500">{formatDate(r.transactionDate)}{r.description ? ` · ${r.description}` : ''}</p>
-              </div>
-              <span className={`text-sm font-bold ${r.type === 'income' ? 'text-emerald-700' : 'text-red-600'}`}>
+              </button>
+              <span className={`shrink-0 text-sm font-bold ${r.type === 'income' ? 'text-emerald-700' : 'text-red-600'}`}>
                 {r.type === 'income' ? '+' : '-'}{formatKES(r.amount)}
               </span>
+              <div className="flex shrink-0 items-center gap-1">
+                <button type="button" onClick={() => openEdit(r)} aria-label="Edit transaction" className="rounded-full p-2 text-slate-400 active:scale-95">
+                  <Pencil className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Delete transaction"
+                  onClick={() => setToDelete({ id: r.id, label: `${r.category} · ${formatKES(r.amount)}` })}
+                  className="rounded-full p-2 text-red-500 active:scale-95"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             </Card>
           ))}
         </div>
       </div>
 
-      <Sheet open={open} onClose={() => setOpen(false)} title="Add transaction">
+      <Sheet open={open} onClose={() => { setOpen(false); setEditingId(null); }} title={editingId ? 'Edit transaction' : 'Add transaction'}>
         <form onSubmit={submit} className="space-y-4">
           <FormField label="Type">
             <Select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
@@ -458,9 +584,20 @@ export function FinanceScreen() {
             <TextArea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </FormField>
           {formError && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">{formError}</div>}
-          <Button type="submit" fullWidth loading={saving}>Save transaction</Button>
+          <Button type="submit" fullWidth loading={saving}>{editingId ? 'Save changes' : 'Save transaction'}</Button>
         </form>
       </Sheet>
+
+      <ConfirmDialog
+        open={!!toDelete}
+        title="Delete transaction?"
+        description={toDelete ? `${toDelete.label} will be removed permanently.` : ''}
+        confirmLabel="Delete"
+        tone="danger"
+        loading={deleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setToDelete(null)}
+      />
     </AuthedShell>
   );
 }
