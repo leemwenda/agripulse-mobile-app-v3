@@ -81,9 +81,12 @@ const TABS = [
 ];
 
 export function BottomNav() {
+  const { user } = useApp();
+  const hideFarm = user?.role === 'buyer' || user?.role === 'vet';
+  const tabs = TABS.filter((t) => !(hideFarm && t.to === '/farm'));
   return (
     <nav className="sticky bottom-0 z-30 flex border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)]">
-      {TABS.map((tab) => (
+      {tabs.map((tab) => (
         <NavLink
           key={tab.to}
           to={tab.to}
