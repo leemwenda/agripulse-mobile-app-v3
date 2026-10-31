@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
+import { UpdateGate } from './components/UpdateGate';
 import { SplashScreen, LoginScreen, RegisterScreen } from './screens/Auth';
 import { WelcomeScreen } from './screens/Welcome';
 import { JourneyScreen } from './screens/Journey';
@@ -76,6 +77,7 @@ export default function App() {
   return (
     <AppProvider>
       <BrowserRouter>
+        <UpdateGate />
         <AppRoutes />
       </BrowserRouter>
     </AppProvider>
