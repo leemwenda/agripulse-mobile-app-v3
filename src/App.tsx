@@ -11,6 +11,7 @@ import { MilkScreen, HealthScreen, BreedingScreen, FinanceScreen } from './scree
 import { AIAdvisorScreen } from './screens/AIAdvisor';
 import { PassportScreen } from './screens/Passport';
 import { WorkersScreen } from './screens/Workers';
+import { EditAnimalScreen } from './screens/EditAnimal';
 import { WebsiteOnlyScreen } from './screens/WebsiteOnly';
 import { MoreScreen, NotificationsScreen, ProfileScreen, SettingsScreen, PlaceholderScreen } from './screens/More';
 
@@ -52,6 +53,7 @@ function AppRoutes() {
       <Route path="/farm/health" element={<PrivateRoute><HealthScreen /></PrivateRoute>} />
       <Route path="/farm/breeding" element={<PrivateRoute><BreedingScreen /></PrivateRoute>} />
       <Route path="/farm/finance" element={<PrivateRoute><FinanceScreen /></PrivateRoute>} />
+      <Route path="/farm/:id/edit" element={<PrivateRoute><EditAnimalScreen /></PrivateRoute>} />
       <Route path="/farm/:id" element={<PrivateRoute><AnimalDetailScreen /></PrivateRoute>} />
 
       <Route path="/ai" element={<PrivateRoute><AIAdvisorScreen /></PrivateRoute>} />

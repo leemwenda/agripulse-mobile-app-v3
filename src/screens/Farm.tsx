@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Search, Plus, PawPrint, Milk, Stethoscope, Syringe, Wallet, QrCode, ChevronRight, Tag } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 import { AuthedShell } from '../components/layout';
 import {
   Card, EmptyState, SkeletonList, Button, TextInput, Select,
@@ -106,6 +107,7 @@ function ShortcutButton({ icon: Icon, label, onClick }: { icon: typeof Milk; lab
 export function AnimalDetailScreen() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useApp();
   const animalId = Number(id);
   const [tab, setTab] = useState<'overview' | 'milk' | 'health' | 'breeding'>('overview');
 
@@ -141,6 +143,10 @@ export function AnimalDetailScreen() {
           <QrCode className="h-4 w-4" /> View digital passport & QR code
         </Button>
 
+        {user?.role === 'admin' && (
+          <Button variant="outline" fullWidth onClick={() => navigate(`/farm/${animal.id}/edit`)}>Edit animal</Button>
+        )}
+
         <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
           {(['overview', 'milk', 'health', 'breeding'] as const).map((t) => (
             <button
@@ -155,6 +161,7 @@ export function AnimalDetailScreen() {
 
         {tab === 'overview' && (
           <Card className="space-y-2 text-sm">
+            <Row label="Category" value={animal.category ? animal.category.replace('_', ' ') : '—'} />
             <Row label="Colour" value={animal.color || '—'} />
             <Row label="AgriPulse ID" value={animal.agripulseId || 'Not yet issued'} />
             <Row label="Registered" value={formatDate(animal.createdAt)} />
