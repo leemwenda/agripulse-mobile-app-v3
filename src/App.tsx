@@ -14,6 +14,7 @@ import { WorkersScreen } from './screens/Workers';
 import { ReportsScreen } from './screens/Reports';
 import { HelpScreen } from './screens/Help';
 import { EditAnimalScreen } from './screens/EditAnimal';
+import { InitiateTransferScreen, AcceptTransferScreen } from './screens/Transfer';
 import { WebsiteOnlyScreen } from './screens/WebsiteOnly';
 import { MoreScreen, NotificationsScreen, ProfileScreen, SettingsScreen } from './screens/More';
 
@@ -56,7 +57,9 @@ function AppRoutes() {
       <Route path="/farm/breeding" element={<PrivateRoute><BreedingScreen /></PrivateRoute>} />
       <Route path="/farm/finance" element={<PrivateRoute><FinanceScreen /></PrivateRoute>} />
       <Route path="/farm/:id/edit" element={<PrivateRoute><EditAnimalScreen /></PrivateRoute>} />
+      <Route path="/farm/:id/transfer" element={<PrivateRoute><InitiateTransferScreen /></PrivateRoute>} />
       <Route path="/farm/:id" element={<PrivateRoute><AnimalDetailScreen /></PrivateRoute>} />
+      <Route path="/transfer" element={<PrivateRoute><AcceptTransferScreen /></PrivateRoute>} />
 
       <Route path="/ai" element={<PrivateRoute><AIAdvisorScreen /></PrivateRoute>} />
 

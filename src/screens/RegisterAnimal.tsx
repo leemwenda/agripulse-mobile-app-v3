@@ -1,37 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, X } from 'lucide-react';
-import { Camera as CapCamera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { AuthedShell } from '../components/layout';
 import { Button, FormField, TextInput, Select, TextArea } from '../components/ui';
 import { useApp } from '../context/AppContext';
 import { AnimalsApi } from '../lib/api';
+import { pickPhoto } from '../lib/photos';
 
 const MAX_PHOTOS = 4;
-
-// Shrinks a photo to at most 1600px on its long side as JPEG, so it stays
-// well under the server's 5 MB upload limit.
-function compressDataUrl(dataUrl: string, name: string): Promise<File> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      const scale = Math.min(1, 1600 / Math.max(img.width, img.height));
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(img.width * scale);
-      canvas.height = Math.round(img.height * scale);
-      const ctx = canvas.getContext('2d');
-      if (!ctx) { reject(new Error('Could not process the photo.')); return; }
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob(
-        (b) => (b ? resolve(new File([b], name, { type: 'image/jpeg' })) : reject(new Error('Could not process the photo.'))),
-        'image/jpeg',
-        0.8,
-      );
-    };
-    img.onerror = () => reject(new Error('Could not read the photo.'));
-    img.src = dataUrl;
-  });
-}
 
 interface PickedPhoto { file: File; preview: string }
 
@@ -47,23 +23,11 @@ export function RegisterAnimalScreen() {
   async function addPhoto() {
     if (photos.length >= MAX_PHOTOS) return;
     try {
-      const shot = await CapCamera.getPhoto({
-        quality: 80,
-        width: 1600,
-        correctOrientation: true,
-        resultType: CameraResultType.DataUrl,
-        source: CameraSource.Prompt,
-        promptLabelHeader: 'Add a photo',
-        promptLabelPhoto: 'Choose from gallery',
-        promptLabelPicture: 'Take a photo',
-      });
-      if (!shot.dataUrl) return;
-      const file = await compressDataUrl(shot.dataUrl, `animal-${Date.now()}.jpg`);
+      const file = await pickPhoto('animal');
+      if (!file) return;
       setPhotos((p) => [...p, { file, preview: URL.createObjectURL(file) }]);
     } catch (err: any) {
-      const msg = String(err?.message || '');
-      if (/cancel/i.test(msg)) return;
-      pushToast({ title: 'Could not add photo', description: msg || 'Please try again.', tone: 'error' });
+      pushToast({ title: 'Could not add photo', description: err?.message || 'Please try again.', tone: 'error' });
     }
   }
 

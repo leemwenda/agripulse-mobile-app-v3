@@ -47,6 +47,8 @@ export const AnimalsApi = {
     fd.append('photo', file);
     return http.post<{ photo: unknown }>(`/animals/${id}/photos`, fd, { isFormData: true });
   },
+  deletePhoto: (animalId: number, photoId: number) =>
+    http.delete<{ message: string }>(`/animals/${animalId}/photos/${photoId}`),
 };
 
 // ---- Milk: /api/milk ----------------------------------------------------
@@ -172,6 +174,38 @@ export const ProfileApi = {
   update: (name: string) => http.put<{ user: Partial<AuthUser> }>('/profile', { name }),
   changePassword: (currentPassword: string, newPassword: string) =>
     http.put<{ message: string }>('/profile/password', { currentPassword, newPassword }),
+};
+
+export interface OwnershipTransfer {
+  id: number;
+  animalId: number;
+  fromUserId: number;
+  toUserId: number | null;
+  status: 'pending' | 'completed' | 'cancelled';
+  transferCode: string;
+  method: string;
+  price: number | null;
+  notes: string | null;
+  transferDate?: string | null;
+  createdAt: string;
+  animal?: { id: number; name: string; agripulseId: string | null; breed: string; tagNumber: string };
+  fromUser?: { id: number; name: string; email?: string };
+  toUser?: { id: number; name: string; email?: string } | null;
+}
+
+export const TransferApi = {
+  initiate: (payload: { animalId: number; price?: number; notes?: string }) =>
+    http.post<{ transfer: OwnershipTransfer; alreadyPending?: boolean }>('/passport/transfer/initiate', { ...payload, method: 'in_app' }),
+  refreshCode: (id: number) =>
+    http.post<{ transfer: OwnershipTransfer }>(`/passport/transfer/${id}/refresh-code`),
+  getByCode: (code: string) =>
+    http.get<{ transfer: OwnershipTransfer }>(`/passport/transfer/${encodeURIComponent(code)}`),
+  accept: (payload: { transferCode: string; buyerSignature?: string }) =>
+    http.post<{ message: string; animal: { id: number; name: string; agripulseId: string | null } }>('/passport/transfer/accept', payload),
+  cancel: (id: number) =>
+    http.post<{ message: string }>(`/passport/transfer/${id}/cancel`),
+  historyForAnimal: (animalId: number) =>
+    http.get<{ transfers: OwnershipTransfer[] }>(`/passport/transfer/animal/${animalId}`),
 };
 
 export function clearSession() {

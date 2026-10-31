@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Search, Plus, PawPrint, Milk, Stethoscope, Syringe, Wallet, QrCode, ChevronRight, Tag } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { PhotoManager } from './PhotoManager';
 import { AuthedShell } from '../components/layout';
 import {
   Card, EmptyState, SkeletonList, Button, TextInput, Select,
@@ -146,6 +147,12 @@ export function AnimalDetailScreen() {
         {user?.role === 'admin' && (
           <Button variant="outline" fullWidth onClick={() => navigate(`/farm/${animal.id}/edit`)}>Edit animal</Button>
         )}
+
+        {user?.role === 'admin' && animal.status === 'active' && (
+          <Button variant="outline" fullWidth onClick={() => navigate(`/farm/${animal.id}/transfer`)}>Transfer ownership</Button>
+        )}
+
+        <PhotoManager animal={animal} canEdit={user?.role === 'admin'} onChanged={reload} />
 
         <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
           {(['overview', 'milk', 'health', 'breeding'] as const).map((t) => (
