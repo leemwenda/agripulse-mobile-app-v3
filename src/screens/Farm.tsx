@@ -73,7 +73,7 @@ export function FarmListScreen() {
           />
         )}
 
-        <div className="space-y-2.5">
+        <div className="space-y-2.5 md:grid md:grid-cols-2 md:gap-3 md:space-y-0 lg:grid-cols-3">
           {filtered.map((a) => (
             <Card key={a.id} onClick={() => navigate(`/farm/${a.id}`)} className="flex items-center gap-3">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
