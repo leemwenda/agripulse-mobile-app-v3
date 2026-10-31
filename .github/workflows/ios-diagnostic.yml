@@ -1,0 +1,48 @@
+
+name: AgriPulse iOS Diagnostic Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ios-diagnostic:
+    name: Prepare iOS on macOS
+    runs-on: macos-26
+
+    steps:
+      - name: Checkout AgriPulse
+        uses: actions/checkout@v4
+
+      - name: Select Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify Xcode
+        run: |
+          xcodebuild -version
+          xcodebuild -showsdks
+
+      - name: Build web application
+        run: npm run build
+
+      - name: Synchronize iOS
+        run: npx cap sync ios
+
+      - name: Inspect iOS workspace
+        run: |
+          xcodebuild -list \
+            -workspace ios/App/App.xcworkspace
+
+      - name: Inspect iOS project files
+        run: |
+          find ios/App -maxdepth 4 \
+            \( -name "*.xcscheme" -o -name "Podfile" \) \
+            -print

@@ -24,8 +24,8 @@
   },
   "devDependencies": {
     "@capacitor/android": "^8.6.0",
-    "@capacitor/assets": "^3.0.5",
-    "@capacitor/cli": "^7.6.10",
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^8.6.0",
     "@capacitor/core": "^8.6.0",
     "@tailwindcss/vite": "4.1.17",
     "@types/node": "22.19.17",
@@ -34,7 +34,7 @@
     "@vitejs/plugin-react": "5.1.1",
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",
-    "vite": "7.3.2",
+    "vite": "^7.3.7",
     "vite-plugin-singlefile": "2.3.0"
   }
 }
