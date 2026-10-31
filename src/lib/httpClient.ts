@@ -127,6 +127,10 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
     /* empty/non-JSON body */
   }
 
+  if (res.status === 401 && token && !opts.skipAuth) {
+    tokenStore.clear();
+    window.dispatchEvent(new Event('agripulse:session-expired'));
+  }
   if (!res.ok) {
     throw new ApiError(data?.error || `Request failed (${res.status})`, res.status, data?.code);
   }

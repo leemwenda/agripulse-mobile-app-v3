@@ -11,6 +11,7 @@ import { MilkScreen, HealthScreen, BreedingScreen, FinanceScreen } from './scree
 import { AIAdvisorScreen } from './screens/AIAdvisor';
 import { PassportScreen } from './screens/Passport';
 import { WorkersScreen } from './screens/Workers';
+import { HelpScreen } from './screens/Help';
 import { EditAnimalScreen } from './screens/EditAnimal';
 import { WebsiteOnlyScreen } from './screens/WebsiteOnly';
 import { MoreScreen, NotificationsScreen, ProfileScreen, SettingsScreen, PlaceholderScreen } from './screens/More';
@@ -66,7 +67,7 @@ function AppRoutes() {
       <Route path="/more/settings" element={<PrivateRoute><SettingsScreen /></PrivateRoute>} />
       <Route path="/more/reports" element={<PrivateRoute><PlaceholderScreen title="Reports" description="Exportable milk, health, breeding and financial reports from the live backend will appear here." /></PrivateRoute>} />
       <Route path="/more/workers" element={<PrivateRoute><WorkersScreen /></PrivateRoute>} />
-      <Route path="/more/help" element={<PrivateRoute><PlaceholderScreen title="Help & Support" description="Contact AgriPulse support or report an issue from this screen." /></PrivateRoute>} />
+      <Route path="/more/help" element={<PrivateRoute><HelpScreen /></PrivateRoute>} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

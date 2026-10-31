@@ -150,6 +150,14 @@ export const WorkersApi = {
   remove: (_id: number) => Promise.reject(new Error('Deleting workers is disabled. Use Deactivate instead.')),
 };
 
+// ---- Issues: /api/issues (support reports)
+export interface SupportIssue { id: number; title: string; status: string; createdAt: string }
+export const IssuesApi = {
+  list: () => http.get<{ issues: SupportIssue[] }>('/issues'),
+  create: (payload: { title: string; description: string; category: string; priority: string }) =>
+    http.post<{ issue: unknown }>('/issues', payload),
+};
+
 export function clearSession() {
   tokenStore.clear();
 }

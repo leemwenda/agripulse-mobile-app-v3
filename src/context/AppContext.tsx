@@ -56,6 +56,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const onExpired = () => {
+      clearSession();
+      setUser(null);
+      if (mode === 'live') {
+        setMode('signed-out');
+        pushToast({ title: 'Session expired', description: 'Please sign in again.', tone: 'info' });
+      }
+    };
+    window.addEventListener('agripulse:session-expired', onExpired);
+    return () => window.removeEventListener('agripulse:session-expired', onExpired);
+  }, [mode, pushToast]);
+
+  useEffect(() => {
     (async () => {
       const reachable = await pingApi();
       setApiReachable(reachable);
