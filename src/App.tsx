@@ -12,6 +12,7 @@ import { AIAdvisorScreen } from './screens/AIAdvisor';
 import { MarketplaceScreen, ListingDetailScreen, CreateListingScreen } from './screens/Marketplace';
 import { PassportScreen } from './screens/Passport';
 import { WorkersScreen } from './screens/Workers';
+import { MyListingsScreen } from './screens/MyListings';
 import { MoreScreen, NotificationsScreen, ProfileScreen, SettingsScreen, PlaceholderScreen } from './screens/More';
 
 function PrivateRoute({ children }: { children: React.ReactElement }) {
@@ -57,6 +58,7 @@ function AppRoutes() {
 
       <Route path="/marketplace" element={<PrivateRoute><MarketplaceScreen /></PrivateRoute>} />
       <Route path="/marketplace/new" element={<PrivateRoute><CreateListingScreen /></PrivateRoute>} />
+      <Route path="/marketplace/mine" element={<PrivateRoute><MyListingsScreen /></PrivateRoute>} />
       <Route path="/marketplace/:id" element={<PrivateRoute><ListingDetailScreen /></PrivateRoute>} />
 
       <Route path="/passport/:agripulseId" element={<PrivateRoute><PassportScreen /></PrivateRoute>} />

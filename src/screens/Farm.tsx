@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Search, Plus, PawPrint, Milk, Stethoscope, Syringe, Wallet, QrCode, Camera, ChevronRight } from 'lucide-react';
+import { Search, Plus, PawPrint, Milk, Stethoscope, Syringe, Wallet, QrCode, Camera, ChevronRight, Tag } from 'lucide-react';
 import { AuthedShell } from '../components/layout';
 import {
   Card, EmptyState, SkeletonList, Button, FormField, TextInput, Select,
@@ -40,11 +40,12 @@ export function FarmListScreen() {
       }
     >
       <div className="space-y-4">
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-5 gap-2">
           <ShortcutButton icon={Milk} label="Milk" onClick={() => navigate('/farm/milk')} />
           <ShortcutButton icon={Stethoscope} label="Health" onClick={() => navigate('/farm/health')} />
           <ShortcutButton icon={Syringe} label="Breeding" onClick={() => navigate('/farm/breeding')} />
           <ShortcutButton icon={Wallet} label="Finance" onClick={() => navigate('/farm/finance')} />
+          <ShortcutButton icon={Tag} label="Sold" onClick={() => setStatus('sold')} />
         </div>
 
         <div className="flex gap-2">

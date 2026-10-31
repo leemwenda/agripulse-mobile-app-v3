@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Milk, Stethoscope, Syringe, Wallet, Bell, User, Settings, HelpCircle, LogOut,
-  ChevronRight, Users, FileText, Moon,
+  ChevronRight, Users, FileText, Moon, Store,
 } from 'lucide-react';
 import { AuthedShell } from '../components/layout';
 import { Card, EmptyState, Button, ConfirmDialog, SkeletonList } from '../components/ui';
@@ -25,6 +25,7 @@ export function MoreScreen() {
     isFarm && { icon: Stethoscope, label: 'Animal health', to: '/farm/health' },
     isFarm && { icon: Syringe, label: 'Breeding', to: '/farm/breeding' },
     isFarm && { icon: Wallet, label: 'Finance', to: '/farm/finance' },
+    isFarm && { icon: Store, label: 'My listings', to: '/marketplace/mine' },
     isFarm && user?.role === 'admin' && { icon: Users, label: 'Farm workers', to: '/more/workers' },
     { icon: Bell, label: 'Notifications', to: '/more/notifications' },
     { icon: FileText, label: 'Reports', to: '/more/reports' },
