@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Milk, Stethoscope, Syringe, Wallet, Bell, User, Settings, HelpCircle, LogOut,
-  ChevronRight, Users, FileText, Moon, Store, ArrowRightLeft,
+  ChevronRight, Users, FileText, Moon, ArrowRightLeft,
 } from 'lucide-react';
 import { AuthedShell } from '../components/layout';
 import { Card, EmptyState, Button, ConfirmDialog, SkeletonList, FormField, TextInput } from '../components/ui';

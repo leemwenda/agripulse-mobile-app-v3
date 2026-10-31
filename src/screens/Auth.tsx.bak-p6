@@ -57,7 +57,7 @@ function BrandHeader({ subtitle }: { subtitle: string }) {
 }
 
 export function LoginScreen() {
-  const { login, apiReachable } = useApp();
+  const { login, apiReachable, pushToast } = useApp();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -73,6 +73,16 @@ export function LoginScreen() {
     setLoading(false);
     if (res.ok) navigate('/home', { replace: true });
     else setError(res.error || 'Login failed.');
+  }
+
+  async function handleResend() {
+    if (!email) return;
+    try {
+      await AuthApi.resendVerification(email);
+      pushToast({ title: 'Verification email sent', tone: 'success' });
+    } catch (err: any) {
+      pushToast({ title: 'Failed to send', description: err?.message, tone: 'error' });
+    }
   }
 
   return (
@@ -104,6 +114,11 @@ export function LoginScreen() {
               <p className="mt-1 text-red-600">
                 Could not reach AgriPulse. Check your internet connection and try again.
               </p>
+            )}
+            {error.toLowerCase().includes('verify') && (
+              <button type="button" onClick={handleResend} className="mt-2 font-semibold text-red-800 underline">
+                Resend verification email
+              </button>
             )}
           </div>
         )}
