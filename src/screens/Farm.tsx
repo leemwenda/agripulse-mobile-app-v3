@@ -77,8 +77,12 @@ export function FarmListScreen() {
         <div className="space-y-2.5 md:grid md:grid-cols-2 md:gap-3 md:space-y-0 lg:grid-cols-3">
           {filtered.map((a) => (
             <Card key={a.id} onClick={() => navigate(`/farm/${a.id}`)} className="flex items-center gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-                <PawPrint className="h-6 w-6" />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-emerald-50 text-emerald-700">
+                {a.photos && a.photos[0] ? (
+                  <img src={API_BASE_URL.replace(/\/api$/, '') + a.photos[0].url} alt={a.name} className="h-full w-full object-cover" />
+                ) : (
+                  <PawPrint className="h-6 w-6" />
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
