@@ -27,7 +27,7 @@ export function MilkScreen() {
 
   const records = data?.records || [];
   const todayTotal = records
-    .filter((r) => r.productionDate === new Date().toISOString().slice(0, 10))
+    .filter((r) => String(r.productionDate).slice(0, 10) === new Date().toLocaleDateString('en-CA'))
     .reduce((s, r) => s + Number(r.quantityLiters), 0);
 
   async function submit(e: React.FormEvent) {
@@ -247,9 +247,8 @@ export function BreedingScreen() {
           <FormField label="Pregnancy status">
             <Select value={form.pregnancyStatus} onChange={(e) => setForm({ ...form, pregnancyStatus: e.target.value })}>
               <option value="pending">Pending</option>
-              <option value="confirmed">Confirmed</option>
               <option value="pregnant">Pregnant</option>
-              <option value="calved">Calved</option>
+              <option value="gave_birth">Gave birth</option>
               <option value="failed">Failed</option>
             </Select>
           </FormField>
