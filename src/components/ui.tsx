@@ -179,7 +179,7 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 backdrop-blur-[1px]" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-white p-5 pb-8 shadow-2xl animate-[slideUp_0.22s_ease-out]"
+        className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-white p-5 pb-32 shadow-2xl animate-[slideUp_0.22s_ease-out]"
       >
         <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-200" />
         <div className="mb-4 flex items-center justify-between">

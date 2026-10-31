@@ -88,7 +88,7 @@ export function LoginScreen() {
   return (
     <AuthLayout>
       <BrandHeader subtitle="Smart livestock management for Kenyan farms" />
-      <form onSubmit={onSubmit} className="space-y-4 px-6 pt-4">
+      <form onSubmit={onSubmit} className="space-y-4 px-6 pt-4 pb-32">
         <FormField label="Email address">
           <div className="relative">
             <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -183,7 +183,7 @@ export function RegisterScreen() {
   return (
     <AuthLayout>
       <BrandHeader subtitle="Create your Farm Owner account" />
-      <form onSubmit={onSubmit} className="space-y-4 px-6 pt-4 pb-10">
+      <form onSubmit={onSubmit} className="space-y-4 px-6 pt-4 pb-32">
         <FormField label="Full name">
           <TextInput required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         </FormField>

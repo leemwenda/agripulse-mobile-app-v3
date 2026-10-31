@@ -71,7 +71,7 @@ export function RegisterAnimalScreen() {
 
   return (
     <AuthedShell title="Register Animal" showBack>
-      <form onSubmit={onSubmit} className="space-y-4 pb-8">
+      <form onSubmit={onSubmit} className="space-y-4 pb-32">
         <FormField label="Animal name *">
           <TextInput required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         </FormField>

@@ -111,7 +111,7 @@ export function InitiateTransferScreen() {
           </Card>
         ) : (
           <Card>
-            <form onSubmit={create} className="space-y-3">
+            <form onSubmit={create} className="space-y-3 pb-32">
               <p className="text-sm font-bold text-slate-900">Start a new transfer</p>
               <FormField label="Asking price (KSh, optional)">
                 <TextInput type="number" inputMode="decimal" min="0" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
@@ -203,7 +203,7 @@ export function AcceptTransferScreen() {
         <Card>
           <p className="text-sm font-bold text-slate-900">Enter the transfer code</p>
           <p className="mt-1 text-xs text-slate-500">Ask the seller for the code from their app.</p>
-          <form onSubmit={lookup} className="mt-3 space-y-3">
+          <form onSubmit={lookup} className="mt-3 space-y-3 pb-32">
             <FormField label="Transfer code">
               <TextInput
                 value={code}

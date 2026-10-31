@@ -168,7 +168,7 @@ export function ProfileScreen() {
         </div>
 
         <Card>
-          <form onSubmit={saveName} className="space-y-3">
+          <form onSubmit={saveName} className="space-y-3 pb-32">
             <FormField label="Full name">
               <TextInput required value={name} onChange={(e) => setName(e.target.value)} />
             </FormField>
@@ -178,7 +178,7 @@ export function ProfileScreen() {
         </Card>
 
         <Card>
-          <form onSubmit={savePassword} className="space-y-3">
+          <form onSubmit={savePassword} className="space-y-3 pb-32">
             <p className="text-sm font-bold text-slate-900">Change password</p>
             <FormField label="Current password">
               <TextInput type="password" value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} />

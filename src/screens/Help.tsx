@@ -46,7 +46,7 @@ export function HelpScreen() {
           </a>
         </Card>
 
-        <form onSubmit={submit} className="space-y-4">
+        <form onSubmit={submit} className="space-y-4 pb-32">
           <FormField label="What is the problem about?">
             <Select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
               <option value="bug">Something is not working</option>

@@ -75,7 +75,7 @@ export function EditAnimalScreen() {
 
   return (
     <AuthedShell title="Edit animal" showBack>
-      <form onSubmit={save} className="space-y-4 pb-8">
+      <form onSubmit={save} className="space-y-4 pb-32">
         <FormField label="Animal name *">
           <TextInput required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         </FormField>
