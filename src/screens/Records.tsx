@@ -286,9 +286,9 @@ export function FinanceScreen() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const records = data?.records || [];
-  const income = records.filter((r) => r.type === 'income').reduce((s, r) => s + Number(r.amount), 0);
-  const expense = records.filter((r) => r.type === 'expense').reduce((s, r) => s + Number(r.amount), 0);
+  const records = data?.transactions || [];
+  const income = Number(data?.summary?.income ?? 0);
+  const expense = Number(data?.summary?.expense ?? 0);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();

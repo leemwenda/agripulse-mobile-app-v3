@@ -5,11 +5,11 @@ import {
   ChevronRight, Users, FileText, Moon,
 } from 'lucide-react';
 import { AuthedShell } from '../components/layout';
-import { Card, EmptyState, Button, ConfirmDialog, SkeletonList } from '../components/ui';
+import { Card, EmptyState, Button, ConfirmDialog, SkeletonList, FormField, TextInput } from '../components/ui';
 import { useApp } from '../context/AppContext';
 import { formatDateTime, initials } from '../lib/format';
 import { useRemoteData } from '../lib/useRemoteData';
-import { NotificationsApi } from '../lib/api';
+import { NotificationsApi, ProfileApi } from '../lib/api';
 import { ErrorBanner } from './Home';
 import { useTheme } from '../lib/theme';
 
@@ -109,11 +109,55 @@ export function NotificationsScreen() {
 }
 
 export function ProfileScreen() {
-  const { user } = useApp();
+  const { user, setUser, pushToast } = useApp();
+  const [name, setName] = useState(user?.name || '');
+  const [savingName, setSavingName] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [pw, setPw] = useState({ current: '', next: '', confirm: '' });
+  const [savingPw, setSavingPw] = useState(false);
+  const [pwError, setPwError] = useState<string | null>(null);
   if (!user) return null;
+
+  async function saveName(e: React.FormEvent) {
+    e.preventDefault();
+    if (savingName) return;
+    setNameError(null);
+    const n = name.trim();
+    if (n.length < 2) { setNameError('Name must be at least 2 characters.'); return; }
+    setSavingName(true);
+    try {
+      const res = await ProfileApi.update(n);
+      if (user) setUser({ ...user, ...res.user, name: n });
+      pushToast({ title: 'Profile updated', tone: 'success' });
+    } catch (err: any) {
+      setNameError(err?.message || 'Could not update your name.');
+    } finally {
+      setSavingName(false);
+    }
+  }
+
+  async function savePassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (savingPw) return;
+    setPwError(null);
+    if (!pw.current) { setPwError('Enter your current password.'); return; }
+    if (pw.next.length < 8) { setPwError('New password must be at least 8 characters.'); return; }
+    if (pw.next !== pw.confirm) { setPwError('New passwords do not match.'); return; }
+    setSavingPw(true);
+    try {
+      await ProfileApi.changePassword(pw.current, pw.next);
+      setPw({ current: '', next: '', confirm: '' });
+      pushToast({ title: 'Password changed', tone: 'success' });
+    } catch (err: any) {
+      setPwError(err?.message || 'Could not change your password.');
+    } finally {
+      setSavingPw(false);
+    }
+  }
+
   return (
     <AuthedShell title="Profile" showBack>
-      <div className="space-y-4">
+      <div className="space-y-4 pb-8">
         <div className="flex flex-col items-center gap-2 py-2">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-700 text-2xl font-bold text-white">
             {initials(user.name)}
@@ -121,6 +165,34 @@ export function ProfileScreen() {
           <p className="text-base font-bold text-slate-900">{user.name}</p>
           <p className="text-xs text-slate-500">{user.email}</p>
         </div>
+
+        <Card>
+          <form onSubmit={saveName} className="space-y-3">
+            <FormField label="Full name">
+              <TextInput required value={name} onChange={(e) => setName(e.target.value)} />
+            </FormField>
+            {nameError && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">{nameError}</div>}
+            <Button type="submit" fullWidth loading={savingName} disabled={name.trim() === user.name}>Save name</Button>
+          </form>
+        </Card>
+
+        <Card>
+          <form onSubmit={savePassword} className="space-y-3">
+            <p className="text-sm font-bold text-slate-900">Change password</p>
+            <FormField label="Current password">
+              <TextInput type="password" value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} />
+            </FormField>
+            <FormField label="New password" hint="At least 8 characters">
+              <TextInput type="password" value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} />
+            </FormField>
+            <FormField label="Confirm new password">
+              <TextInput type="password" value={pw.confirm} onChange={(e) => setPw({ ...pw, confirm: e.target.value })} />
+            </FormField>
+            {pwError && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">{pwError}</div>}
+            <Button type="submit" fullWidth loading={savingPw}>Change password</Button>
+          </form>
+        </Card>
+
         <Card className="space-y-2 text-sm">
           <Row label="Role" value={user.role} />
           <Row label="Farm" value={user.farmName || '—'} />

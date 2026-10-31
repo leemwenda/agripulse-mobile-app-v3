@@ -18,6 +18,7 @@ interface AppContextValue {
   login: (email: string, password: string, remember: boolean) => Promise<{ ok: boolean; error?: string }>;
   loginWithToken: (token: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
+  setUser: (u: AuthUser) => void;
 }
 
 interface Toast {
@@ -151,8 +152,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [mode]);
 
   const value = useMemo(
-    () => ({ mode, user, isOnline, apiReachable, toasts, pushToast, dismissToast, login, loginWithToken, logout }),
-    [mode, user, isOnline, apiReachable, toasts, pushToast, dismissToast, login, loginWithToken, logout],
+    () => ({ mode, user, isOnline, apiReachable, toasts, pushToast, dismissToast, login, loginWithToken, logout, setUser }),
+    [mode, user, isOnline, apiReachable, toasts, pushToast, dismissToast, login, loginWithToken, logout, setUser],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

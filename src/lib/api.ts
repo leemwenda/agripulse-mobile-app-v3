@@ -86,7 +86,7 @@ export const BreedingApi = {
 export const FinanceApi = {
   list: (params?: { type?: string; from?: string; to?: string }) => {
     const qs = new URLSearchParams(params as Record<string, string>).toString();
-    return http.get<{ records: FinancialTransaction[] }>(`/financial${qs ? `?${qs}` : ''}`);
+    return http.get<{ transactions: FinancialTransaction[]; total: number; summary: { income: string | number; expense: string | number; profit: number } }>(`/financial${qs ? `?${qs}` : ''}`);
   },
   create: (payload: Partial<FinancialTransaction>) => http.post<{ record: FinancialTransaction }>('/financial', payload),
 };
@@ -163,6 +163,12 @@ export const ReportsApi = {
     topProducers: { animalId: number; _sum: { quantityLiters: string | number | null }; _count: { id: number }; animal?: { name: string; tagNumber: string } }[];
     trend: { month: string; total: number }[];
   }>('/reports/milk'),
+};
+
+export const ProfileApi = {
+  update: (name: string) => http.put<{ user: Partial<AuthUser> }>('/profile', { name }),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    http.put<{ message: string }>('/profile/password', { currentPassword, newPassword }),
 };
 
 export function clearSession() {
