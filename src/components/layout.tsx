@@ -9,15 +9,8 @@ import { NotificationsApi } from '../lib/api';
 import { useTheme } from '../lib/theme';
 
 export function PhoneFrame({ children }: { children: ReactNode }) {
-  // Centers the mobile experience on larger screens (desktop preview) while
-  // behaving as a normal full-width layout on actual mobile viewports.
-  return (
-    <div className="min-h-screen bg-slate-100 sm:flex sm:items-center sm:justify-center sm:py-6">
-      <div className="relative flex h-screen w-full flex-col overflow-hidden bg-slate-50 sm:h-[860px] sm:max-w-[420px] sm:rounded-[2.5rem] sm:border-8 sm:border-slate-900 sm:shadow-2xl">
-        {children}
-      </div>
-    </div>
-  );
+  // Full-screen adaptive container. Layout (rail, columns) is decided by the children.
+  return <div className="flex h-dvh w-full overflow-hidden bg-slate-100">{children}</div>;
 }
 
 let unreadCache: { n: number; at: number } | null = null;
@@ -84,7 +77,7 @@ export function BottomNav() {
   const hideFarm = user?.role === 'buyer' || user?.role === 'vet';
   const tabs = TABS.filter((t) => !(hideFarm && t.to === '/farm'));
   return (
-    <nav className="sticky bottom-0 z-30 flex border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)]">
+    <nav className="sticky bottom-0 z-30 flex border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
       {tabs.map((tab) => (
         <NavLink
           key={tab.to}
@@ -108,6 +101,40 @@ export function BottomNav() {
   );
 }
 
+function SideRail() {
+  const { user } = useApp();
+  const hideFarm = user?.role === 'buyer' || user?.role === 'vet';
+  const tabs = TABS.filter((t) => !(hideFarm && t.to === '/farm'));
+  return (
+    <aside className="hidden w-60 shrink-0 flex-col border-r border-slate-200 bg-white md:flex">
+      <div className="flex items-center gap-2.5 px-5 py-5">
+        <img src="/brand-logo-source.png" alt="" className="keep-white h-9 w-9 rounded-lg bg-white object-contain" />
+        <span className="text-base font-extrabold text-slate-900">AgriPulse</span>
+      </div>
+      <nav className="flex flex-col gap-1 px-3">
+        {tabs.map((tab) => (
+          <NavLink
+            key={tab.to}
+            to={tab.to}
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition',
+                isActive ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-slate-100',
+              )
+            }
+          >
+            <tab.icon className="h-5 w-5" />
+            {tab.label}
+          </NavLink>
+        ))}
+      </nav>
+      <div className="mt-auto border-t border-slate-200 p-4">
+        <RoleBadge />
+      </div>
+    </aside>
+  );
+}
+
 export function AuthedShell({ title, children, showBack = false, right }: { title: string; children: ReactNode; showBack?: boolean; right?: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -115,12 +142,17 @@ export function AuthedShell({ title, children, showBack = false, right }: { titl
 
   return (
     <PhoneFrame>
-      <OfflineBanner />
-      <DemoModeBanner />
-      <TopBar title={title} onBack={showBack || !isTabRoot ? () => navigate(-1) : undefined} right={right} />
-      <div className="flex-1 overflow-y-auto px-4 py-4">{children}</div>
-      <BottomNav />
-      <ToastStack />
+      <SideRail />
+      <div className="relative flex min-w-0 flex-1 flex-col bg-slate-50">
+        <OfflineBanner />
+        <DemoModeBanner />
+        <TopBar title={title} onBack={showBack || !isTabRoot ? () => navigate(-1) : undefined} right={right} />
+        <div className="flex-1 overflow-y-auto">
+          <div className="mx-auto w-full max-w-5xl px-4 py-4 md:px-6 md:py-6">{children}</div>
+        </div>
+        <BottomNav />
+        <ToastStack />
+      </div>
     </PhoneFrame>
   );
 }
@@ -128,9 +160,11 @@ export function AuthedShell({ title, children, showBack = false, right }: { titl
 export function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <PhoneFrame>
-      <div className="flex-1 overflow-y-auto">
-        <ToastStack />
-        {children}
+      <div className="mx-auto flex min-w-0 w-full flex-col bg-slate-50 md:max-w-lg md:border-x md:border-slate-200 md:shadow-xl">
+        <div className="flex-1 overflow-y-auto">
+          <ToastStack />
+          {children}
+        </div>
       </div>
     </PhoneFrame>
   );
