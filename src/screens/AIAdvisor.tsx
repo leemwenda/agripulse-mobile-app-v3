@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Sparkles, Send, AlertTriangle, Loader2, Info } from 'lucide-react';
+import { Sparkles, Send, AlertTriangle, Loader2, Info, Trash2 } from 'lucide-react';
 import { AuthedShell } from '../components/layout';
 import { Button, Card } from '../components/ui';
 import { useApp } from '../context/AppContext';
@@ -72,8 +72,30 @@ export function AIAdvisorScreen() {
     }
   }
 
+  async function startNewChat() {
+    if (sessionId) {
+      try { await AiApi.deleteSession(sessionId); } catch { /* ignore */ }
+    }
+    setMessages([]);
+    setSessionId(null);
+    setInitializing(true);
+    setInitError(null);
+    try {
+      const res = await AiApi.createSession();
+      setSessionId(res.session.id);
+    } catch (err: any) {
+      setInitError(err?.message || 'Could not start a new chat.');
+    } finally {
+      setInitializing(false);
+    }
+  }
+
   return (
-    <AuthedShell title="AI Advisor">
+    <AuthedShell title="AI Advisor" right={
+      <button onClick={startNewChat} disabled={initializing} className="rounded-full bg-slate-100 p-2 text-slate-600 active:scale-95 disabled:opacity-50" aria-label="New chat">
+        <Trash2 className="h-4.5 w-4.5" />
+      </button>
+    }>
       <div className="flex h-full flex-col gap-3">
         <div className="flex items-start gap-2 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-xs text-indigo-800">
           <Info className="mt-0.5 h-4 w-4 shrink-0" />

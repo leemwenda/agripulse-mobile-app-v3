@@ -24,6 +24,7 @@ export const AuthApi = {
   me: () => http.get<{ user: AuthUser }>('/auth/me'),
   logout: () => http.post<{ message: string }>('/auth/logout'),
   forgotPassword: (email: string) => http.post<{ message: string }>('/auth/forgot-password', { email }),
+  resendVerification: (email: string) => http.post<{ message: string }>('/auth/resend-verification', { email }),
 };
 
 // ---- Dashboard: GET /api/dashboard -----------------------------------------
@@ -116,6 +117,7 @@ export const AiApi = {
   createSession: () => http.post<{ session: AiChatSession }>('/ai/sessions'),
   messages: (sessionId: number) => http.get<{ messages: AiMessage[] }>(`/ai/sessions/${sessionId}/messages`),
   chat: (sessionId: number, message: string) => http.post<{ reply: string }>('/ai/chat', { sessionId, message }),
+  deleteSession: (sessionId: number) => http.delete<{ message: string }>(`/ai/sessions/${sessionId}`),
   context: () => http.get<{ animals: number; milk7: string; health: number; breeding: number }>('/ai/context'),
 };
 
