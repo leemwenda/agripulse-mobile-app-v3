@@ -1,4 +1,4 @@
-import { type ReactNode, type ButtonHTMLAttributes, type InputHTMLAttributes, type TextareaHTMLAttributes, type SelectHTMLAttributes, useState } from 'react';
+import { type ReactNode, type ButtonHTMLAttributes, type InputHTMLAttributes, type TextareaHTMLAttributes, type SelectHTMLAttributes, useState, useEffect } from 'react';
 import { cn } from '../utils/cn';
 import { AlertTriangle, CheckCircle2, Info, Inbox, Loader2, X, Leaf } from 'lucide-react';
 import { useApp } from '../context/AppContext';
@@ -87,20 +87,31 @@ export function Badge({ tone = 'neutral', children }: { tone?: keyof typeof tone
 
 // ----------------------------------------------------------- Status Pill ---
 export function StatusPill({ status }: { status: string }) {
-  const map: Record<string, keyof typeof toneMap> = {
-    active: 'success', pending: 'warning', overdue: 'danger', due_today: 'warning',
-    completed: 'success', cancelled: 'neutral', sold: 'info', pregnant: 'info',
-    confirmed: 'info', failed: 'danger', calved: 'success', expired: 'neutral', removed: 'neutral',
-  };
-  const label = status.replace(/_/g, ' ');
-  return <Badge tone={map[status] || 'neutral'}>{label}</Badge>;
+  const s = (status || '').toLowerCase();
+  
+  let color = 'bg-slate-100 text-slate-700 border-slate-200';
+  if (['active', 'completed', 'pregnant', 'confirmed', 'gave_birth'].includes(s)) {
+    color = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+  } else if (['pending', 'sold', 'warning'].includes(s)) {
+    color = 'bg-amber-50 text-amber-700 border-amber-200';
+  } else if (['failed', 'deceased', 'cancelled', 'error'].includes(s)) {
+    color = 'bg-red-50 text-red-700 border-red-200';
+  } else if (['inactive', 'archived'].includes(s)) {
+    color = 'bg-slate-100 text-slate-500 border-slate-200';
+  }
+
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${color}`}>
+      {status ? status.replace(/_/g, ' ') : 'Unknown'}
+    </span>
+  );
 }
 
 // -------------------------------------------------------------- Section ---
 export function SectionHeader({ title, action }: { title: string; action?: ReactNode }) {
   return (
-    <div className="mb-3 flex items-center justify-between">
-      <h2 className="text-base font-bold text-slate-900">{title}</h2>
+    <div className="mb-3 flex items-end justify-between">
+      <h2 className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">{title}</h2>
       {action}
     </div>
   );
@@ -174,6 +185,16 @@ export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
 
 // --------------------------------------------------------------- Modal ----
 export function Sheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
+  useEffect(() => {
+    if (!open) return;
+    const handleBack = (e: Event) => {
+      e.preventDefault();
+      onClose();
+    };
+    window.addEventListener('agripulse:hardware-back', handleBack);
+    return () => window.removeEventListener('agripulse:hardware-back', handleBack);
+  }, [open, onClose]);
+
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 backdrop-blur-[1px]" onClick={onClose}>
@@ -200,6 +221,16 @@ export function ConfirmDialog({
   open: boolean; title: string; description: string; confirmLabel?: string; tone?: 'primary' | 'danger';
   onConfirm: () => void; onCancel: () => void; loading?: boolean;
 }) {
+  useEffect(() => {
+    if (!open) return;
+    const handleBack = (e: Event) => {
+      e.preventDefault();
+      onCancel();
+    };
+    window.addEventListener('agripulse:hardware-back', handleBack);
+    return () => window.removeEventListener('agripulse:hardware-back', handleBack);
+  }, [open, onCancel]);
+
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-6">

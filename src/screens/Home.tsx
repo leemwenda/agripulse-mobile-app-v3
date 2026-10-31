@@ -140,11 +140,11 @@ export function HomeScreen() {
 
 function QuickAction({ icon: Icon, label, onClick }: { icon: typeof PlusCircle; label: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-center shadow-sm active:scale-[0.98]">
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
-        <Icon className="h-5 w-5" />
+    <button onClick={onClick} className="flex flex-col items-start gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm active:scale-[0.98] transition-transform">
+      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+        <Icon className="h-4.5 w-4.5" />
       </div>
-      <span className="text-xs font-semibold text-slate-700">{label}</span>
+      <span className="text-xs font-bold text-slate-800">{label}</span>
     </button>
   );
 }

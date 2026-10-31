@@ -125,6 +125,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // finishes the login the same way email/password login does.
   useEffect(() => {
     if (!isNativeApp()) return;
+    
+    // Handle Android hardware back button
+    const backSub = CapacitorApp.addListener('backButton', () => {
+      const event = new Event('agripulse:hardware-back', { cancelable: true });
+      const notHandled = window.dispatchEvent(event);
+      // If a modal didn't prevent default, let the web router handle the back navigation
+      if (notHandled) {
+        window.history.back();
+      }
+    });
+
     const sub = CapacitorApp.addListener('appUrlOpen', async ({ url }) => {
       const { token, error } = parseAuthCallbackUrl(url);
       await closeGoogleSignIn();
@@ -137,6 +148,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     });
     return () => {
+      backSub.then((s) => s.remove());
       sub.then((s) => s.remove());
     };
   }, [loginWithToken, pushToast]);

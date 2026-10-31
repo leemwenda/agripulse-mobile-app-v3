@@ -91,8 +91,9 @@ export function BottomNav() {
         >
           {({ isActive }) => (
             <>
-              <tab.icon className={cn('h-5 w-5', isActive && 'stroke-[2.4]')} />
-              {tab.label}
+              {isActive && <span className="absolute top-0 h-1 w-8 rounded-b-md bg-emerald-600" />}
+              <tab.icon className={cn('h-5 w-5', isActive && 'stroke-[2.5] text-emerald-700')} />
+              <span className={cn(isActive && 'font-bold text-emerald-800')}>{tab.label}</span>
             </>
           )}
         </NavLink>
