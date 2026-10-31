@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { useLocation, useNavigate, NavLink } from 'react-router-dom';
-import { Bell, ChevronLeft, Home, Menu, Moon, PawPrint, Sparkles, Store, Sun } from 'lucide-react';
+import { Bell, ChevronLeft, Home, Menu, Moon, PawPrint, Sparkles, Sun } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { DemoModeBanner, OfflineBanner, ToastStack } from './ui';
 import { useApp } from '../context/AppContext';
@@ -76,7 +76,6 @@ const TABS = [
   { to: '/home', label: 'Home', icon: Home },
   { to: '/farm', label: 'My Farm', icon: PawPrint },
   { to: '/ai', label: 'AI Advisor', icon: Sparkles },
-  { to: '/marketplace', label: 'Market', icon: Store },
   { to: '/more', label: 'More', icon: Menu },
 ];
 
@@ -112,7 +111,7 @@ export function BottomNav() {
 export function AuthedShell({ title, children, showBack = false, right }: { title: string; children: ReactNode; showBack?: boolean; right?: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const isTabRoot = ['/home', '/farm', '/ai', '/marketplace', '/more'].includes(location.pathname);
+  const isTabRoot = ['/home', '/farm', '/ai', '/more'].includes(location.pathname);
 
   return (
     <PhoneFrame>

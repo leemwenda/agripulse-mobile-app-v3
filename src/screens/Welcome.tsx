@@ -1,32 +1,18 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Check, Mail, Milk, QrCode, Stethoscope, Store } from 'lucide-react';
+import { ArrowRight, Check, Mail, Milk, QrCode } from 'lucide-react';
 import { AuthLayout } from '../components/layout';
 
 const FEATURES = [
   { icon: Milk, title: 'Farm Management', desc: 'Track animals, production, health, breeding and more from one dashboard.' },
-  { icon: Store, title: 'Livestock Marketplace', desc: 'Buy and sell livestock securely with verified passports.' },
-  { icon: Stethoscope, title: 'Veterinary Services', desc: 'Book appointments and access trusted care from licensed vets.' },
   { icon: QrCode, title: 'Digital Passport', desc: 'QR verified identity and complete animal records accessible anywhere.' },
 ];
 
 const JOURNEYS = [
   {
     role: 'farmer', img: '/img/farmer.jpg', tag: 'Farm Owner', tagClass: 'text-green-400',
-    title: 'Grow & Manage', desc: 'Your farm, fully digital. Register animals, track health and sell directly.',
-    items: ['Digital Animal Passports', 'Milk & Health Tracking', 'Sell on Marketplace'],
+    title: 'Grow & Manage', desc: 'Your farm, fully digital. Register animals and track milk, health, breeding and finances.',
+    items: ['Digital Animal Passports', 'Milk & Health Tracking', 'Breeding & Finance Records'],
     btn: 'Start as Farm Owner', btnClass: 'bg-green-600',
-  },
-  {
-    role: 'buyer', img: '/img/buyer.jpg', tag: 'Buyer', tagClass: 'text-sky-400',
-    title: 'Browse & Purchase', desc: 'Find verified livestock with full passport history and buy securely.',
-    items: ['Browse Live Listings', 'View Animal Passports', 'Secure Ownership Transfer'],
-    btn: 'Start as Buyer', btnClass: 'bg-sky-600',
-  },
-  {
-    role: 'vet', img: '/img/vet.jpg', tag: 'Veterinarian', tagClass: 'text-teal-400',
-    title: 'Treat & Verify', desc: 'Manage client farms, record treatments and issue health certificates.',
-    items: ['Health Records', 'Vaccination Certificates', 'Appointment Management'],
-    btn: 'Join as Vet', btnClass: 'bg-teal-600',
   },
 ];
 
@@ -66,13 +52,13 @@ export function WelcomeScreen() {
 
             <div className="mt-auto pt-24">
               <span className="inline-flex rounded-full border border-green-500/35 bg-green-600/15 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-green-400">
-                All-in-One Livestock Platform
+                Dairy Farm Management
               </span>
               <h1 className="mt-4 text-[2.6rem] font-black leading-[1.05] tracking-tight">
-                Manage. Trade.<br />Care. <span className="text-green-400">Grow.</span>
+                Manage. Track.<br />Improve. <span className="text-green-400">Grow.</span>
               </h1>
               <p className="mt-4 text-[15px] leading-relaxed text-white/70">
-                AgriPulse connects farmers, buyers and veterinarians on one secure platform for smarter livestock management across Kenya.
+                AgriPulse helps Kenyan dairy farmers manage animals, milk, health, breeding and finances from one app.
               </p>
               <div className="mt-6 flex flex-col gap-3">
                 <button onClick={() => navigate('/journey')} className="flex items-center justify-center gap-2 rounded-xl bg-green-600 py-3.5 text-[15px] font-bold shadow-lg shadow-green-600/30 active:scale-[0.99]">
@@ -137,7 +123,7 @@ export function WelcomeScreen() {
           <div className="rounded-2xl border border-green-500/25 bg-green-600/10 p-6 text-center">
             <h2 className="text-xl font-extrabold">Ready to grow with AgriPulse?</h2>
             <p className="mt-2 text-xs leading-relaxed text-white/65">
-              Bring your farm records, livestock management and marketplace activity together in one place.
+              Bring your farm records and livestock management together in one place.
             </p>
             <button onClick={() => navigate('/journey')} className="mt-4 w-full rounded-xl bg-green-600 py-3.5 text-[15px] font-bold">
               Create your account

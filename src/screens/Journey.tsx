@@ -5,27 +5,11 @@ import { AuthLayout } from '../components/layout';
 const PATHS = [
   {
     role: 'farmer', tag: 'Farm Owner', title: 'Grow & Manage',
-    desc: 'Your farm, fully digital. Register animals, track health, milk & breeding records, and sell directly from your dashboard.',
-    items: ['Digital Animal Passports', 'Health & Milk Tracking', 'Breeding Management', 'Sell on Marketplace', 'Farm Analytics'],
+    desc: 'Your farm, fully digital. Register animals and track health, milk, breeding and finances from your dashboard.',
+    items: ['Digital Animal Passports', 'Health & Milk Tracking', 'Breeding Management', 'Finance Records', 'Reports'],
     btn: 'Start as Farm Owner',
     card: 'border-green-500/30 bg-green-500/5', accent: 'text-green-400',
     btnClass: 'border border-green-500/50 bg-green-600/15 text-green-300',
-  },
-  {
-    role: 'buyer', tag: 'Buyer', title: 'Browse & Purchase',
-    desc: 'Find verified livestock with full passport history. Chat with farmers, negotiate prices, and complete secure ownership transfers.',
-    items: ['Browse Live Listings', 'View Full Animal Passports', 'Direct Farmer Messaging', 'Secure Ownership Transfer', 'Purchase History'],
-    btn: 'Start as Buyer',
-    card: 'border-cyan-500/30 bg-cyan-500/5', accent: 'text-cyan-400',
-    btnClass: 'border border-cyan-500/50 bg-cyan-600/15 text-cyan-300',
-  },
-  {
-    role: 'vet', tag: 'Veterinarian', title: 'Treat & Verify',
-    desc: 'Access full animal health histories, record treatments and vaccinations, verify ownership transfers, and manage your client farms.',
-    items: ['Animal Health Records', 'Vaccination Certificates', 'Transfer Verification', 'Client Farm Access', 'Appointment Management'],
-    btn: 'Start as Veterinarian',
-    card: 'border-violet-500/40 bg-violet-500/10', accent: 'text-violet-400',
-    btnClass: 'bg-violet-600 text-white',
   },
 ];
 
@@ -37,9 +21,9 @@ export function JourneyScreen() {
         <div className="flex flex-col items-center text-center">
           <img src="/brand-logo-source.png" alt="AgriPulse" className="keep-white h-10 w-10 rounded-lg bg-white object-contain p-1" />
           <p className="mt-2 text-[10px] font-semibold tracking-[0.3em] text-white/60">AGRIPULSE</p>
-          <h1 className="mt-4 text-3xl font-black tracking-tight">Choose Your Journey</h1>
+          <h1 className="mt-4 text-3xl font-black tracking-tight">Create Your Farm Account</h1>
           <p className="mt-2 text-sm leading-relaxed text-white/55">
-            One platform. Three paths. All connected through verified digital animal passports.
+            Everything you need to run your dairy farm, in one app.
           </p>
         </div>
 

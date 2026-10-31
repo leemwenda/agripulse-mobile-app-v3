@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus, UserCircle2, KeyRound } from 'lucide-react';
 import { AuthedShell } from '../components/layout';
-import { Button, Card, ConfirmDialog, EmptyState, FormField, Sheet, SkeletonList, TextInput } from '../components/ui';
+import { Button, Card, EmptyState, FormField, Sheet, SkeletonList, TextInput } from '../components/ui';
 import { useApp } from '../context/AppContext';
 import { useRemoteData } from '../lib/useRemoteData';
 import { WorkersApi, type FarmWorker } from '../lib/api';
@@ -18,7 +18,6 @@ export function WorkersScreen() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const [toRemove, setToRemove] = useState<FarmWorker | null>(null);
 
   const workers = data?.workers || [];
 
@@ -73,19 +72,6 @@ export function WorkersScreen() {
     }
   }
 
-  async function confirmRemove() {
-    if (!toRemove) return;
-    const w = toRemove;
-    setToRemove(null);
-    try {
-      await WorkersApi.remove(w.id);
-      pushToast({ title: 'Worker removed', tone: 'success' });
-      reload();
-    } catch (err: any) {
-      pushToast({ title: 'Could not remove', description: err?.message, tone: 'error' });
-    }
-  }
-
   return (
     <AuthedShell
       title="Farm Workers"
@@ -133,7 +119,6 @@ export function WorkersScreen() {
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" onClick={() => openEdit(w)}>Edit</Button>
                   <Button size="sm" variant="outline" onClick={() => toggleActive(w)}>{w.isActive ? 'Deactivate' : 'Reactivate'}</Button>
-                  <Button size="sm" variant="outline" className="border-red-200 text-red-600" onClick={() => setToRemove(w)}>Remove</Button>
                 </div>
               )}
             </Card>
@@ -160,15 +145,6 @@ export function WorkersScreen() {
         </form>
       </Sheet>
 
-      <ConfirmDialog
-        open={!!toRemove}
-        title="Remove worker?"
-        description={toRemove ? `${toRemove.name} will be deleted permanently and can no longer sign in. To keep their account, use Deactivate instead.` : ''}
-        confirmLabel="Remove"
-        tone="danger"
-        onConfirm={confirmRemove}
-        onCancel={() => setToRemove(null)}
-      />
     </AuthedShell>
   );
 }

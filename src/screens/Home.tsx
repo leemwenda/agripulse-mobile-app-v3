@@ -24,12 +24,6 @@ export function HomeScreen() {
   const navigate = useNavigate();
   const { data, loading, error, reload } = useRemoteData(() => DashboardApi.get());
 
-  const isBuyer = user?.role === 'buyer';
-  const isVet = user?.role === 'vet';
-
-  if (isBuyer) return <BuyerHome />;
-  if (isVet) return <VetHome />;
-
   const priorities: PriorityItem[] = [];
   if (data) {
     for (const b of data.upcomingBirths) {
@@ -165,50 +159,5 @@ export function ErrorBanner({ message, onRetry }: { message: string; onRetry: ()
         <Button size="sm" variant="outline" className="mt-2 border-red-300 text-red-700" onClick={onRetry}>Retry</Button>
       </div>
     </Card>
-  );
-}
-
-function BuyerHome() {
-  const navigate = useNavigate();
-  return (
-    <AuthedShell title="Welcome back">
-      <div className="space-y-5">
-        <Card className="bg-emerald-700 text-white">
-          <p className="text-sm font-semibold opacity-90">AgriPulse Marketplace</p>
-          <p className="mt-1 text-lg font-bold">Find verified livestock from trusted Kenyan farms</p>
-          <Button variant="secondary" className="mt-3 bg-white text-emerald-800" onClick={() => navigate('/marketplace')}>Browse listings</Button>
-        </Card>
-        <section>
-          <SectionHeader title="Quick actions" />
-          <div className="grid grid-cols-2 gap-3">
-            <QuickAction icon={PawPrint} label="Browse livestock" onClick={() => navigate('/marketplace')} />
-            <QuickAction icon={Sparkles} label="Ask AI Advisor" onClick={() => navigate('/ai')} />
-          </div>
-        </section>
-        <EmptyState title="No saved searches yet" description="Save a search filter in the marketplace to get notified about new matching listings." />
-      </div>
-    </AuthedShell>
-  );
-}
-
-function VetHome() {
-  const navigate = useNavigate();
-  return (
-    <AuthedShell title="Veterinary dashboard">
-      <div className="space-y-5">
-        <Card className="bg-emerald-700 text-white">
-          <p className="text-sm font-semibold opacity-90">Welcome, Doctor</p>
-          <p className="mt-1 text-lg font-bold">Manage appointments and client animal records</p>
-        </Card>
-        <section>
-          <SectionHeader title="Quick actions" />
-          <div className="grid grid-cols-2 gap-3">
-            <QuickAction icon={Stethoscope} label="Appointments" onClick={() => navigate('/more')} />
-            <QuickAction icon={Sparkles} label="Ask AI Advisor" onClick={() => navigate('/ai')} />
-          </div>
-        </section>
-        <EmptyState title="No appointments today" description="Appointments booked by farmers will appear here once confirmed." />
-      </div>
-    </AuthedShell>
   );
 }

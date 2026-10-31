@@ -131,9 +131,7 @@ export function LoginScreen() {
 
 export function RegisterScreen() {
   const navigate = useNavigate();
-  const [params] = useSearchParams();
-  const startRole = ['farmer', 'buyer', 'vet'].includes(params.get('role') || '') ? (params.get('role') as string) : 'farmer';
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: startRole, farmName: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'farmer', farmName: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -169,7 +167,7 @@ export function RegisterScreen() {
 
   return (
     <AuthLayout>
-      <BrandHeader subtitle={'Create your ' + (({ farmer: 'Farm Owner', buyer: 'Buyer', vet: 'Veterinarian' } as Record<string, string>)[form.role] || 'AgriPulse') + ' account'} />
+      <BrandHeader subtitle="Create your Farm Owner account" />
       <form onSubmit={onSubmit} className="space-y-4 px-6 pt-4 pb-10">
         <FormField label="Full name">
           <TextInput required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
@@ -180,11 +178,9 @@ export function RegisterScreen() {
         <FormField label="Password" hint="At least 8 characters">
           <TextInput type="password" required minLength={8} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
         </FormField>
-        {form.role === 'farmer' && (
-          <FormField label="Farm name">
-            <TextInput required value={form.farmName} onChange={(e) => setForm({ ...form, farmName: e.target.value })} />
-          </FormField>
-        )}
+        <FormField label="Farm name">
+          <TextInput required value={form.farmName} onChange={(e) => setForm({ ...form, farmName: e.target.value })} />
+        </FormField>
         {error && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">{error}</div>}
         <Button type="submit" fullWidth loading={loading}>Create account</Button>
         <button type="button" onClick={() => navigate('/login')} className="w-full text-center text-sm font-semibold text-emerald-700">

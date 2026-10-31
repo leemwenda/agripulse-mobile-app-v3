@@ -9,16 +9,16 @@ import { FarmListScreen, AnimalDetailScreen } from './screens/Farm';
 import { RegisterAnimalScreen } from './screens/RegisterAnimal';
 import { MilkScreen, HealthScreen, BreedingScreen, FinanceScreen } from './screens/Records';
 import { AIAdvisorScreen } from './screens/AIAdvisor';
-import { MarketplaceScreen, ListingDetailScreen, CreateListingScreen } from './screens/Marketplace';
 import { PassportScreen } from './screens/Passport';
 import { WorkersScreen } from './screens/Workers';
-import { MyListingsScreen } from './screens/MyListings';
+import { WebsiteOnlyScreen } from './screens/WebsiteOnly';
 import { MoreScreen, NotificationsScreen, ProfileScreen, SettingsScreen, PlaceholderScreen } from './screens/More';
 
 function PrivateRoute({ children }: { children: React.ReactElement }) {
-  const { mode } = useApp();
+  const { mode, user } = useApp();
   if (mode === 'checking') return <SplashScreen />;
   if (mode === 'signed-out') return <Navigate to="/welcome" replace />;
+  if (user?.role === 'buyer' || user?.role === 'vet') return <WebsiteOnlyScreen />;
   return children;
 }
 
@@ -55,11 +55,6 @@ function AppRoutes() {
       <Route path="/farm/:id" element={<PrivateRoute><AnimalDetailScreen /></PrivateRoute>} />
 
       <Route path="/ai" element={<PrivateRoute><AIAdvisorScreen /></PrivateRoute>} />
-
-      <Route path="/marketplace" element={<PrivateRoute><MarketplaceScreen /></PrivateRoute>} />
-      <Route path="/marketplace/new" element={<PrivateRoute><CreateListingScreen /></PrivateRoute>} />
-      <Route path="/marketplace/mine" element={<PrivateRoute><MyListingsScreen /></PrivateRoute>} />
-      <Route path="/marketplace/:id" element={<PrivateRoute><ListingDetailScreen /></PrivateRoute>} />
 
       <Route path="/passport/:agripulseId" element={<PrivateRoute><PassportScreen /></PrivateRoute>} />
 

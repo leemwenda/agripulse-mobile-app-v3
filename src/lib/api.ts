@@ -146,7 +146,8 @@ export const WorkersApi = {
     http.post<{ worker: FarmWorker }>('/workers', { ...payload, status: 'active' }),
   update: (id: number, payload: { name: string; email: string; status: 'active' | 'inactive'; password?: string }) =>
     http.put<{ worker: FarmWorker }>(`/workers/${id}`, payload),
-  remove: (id: number) => http.delete<{ message: string }>(`/workers/${id}`),
+  // Disabled: deleting a worker cascades to every record they entered. Use update with status 'inactive'.
+  remove: (_id: number) => Promise.reject(new Error('Deleting workers is disabled. Use Deactivate instead.')),
 };
 
 export function clearSession() {
