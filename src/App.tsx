@@ -11,10 +11,11 @@ import { MilkScreen, HealthScreen, BreedingScreen, FinanceScreen } from './scree
 import { AIAdvisorScreen } from './screens/AIAdvisor';
 import { PassportScreen } from './screens/Passport';
 import { WorkersScreen } from './screens/Workers';
+import { ReportsScreen } from './screens/Reports';
 import { HelpScreen } from './screens/Help';
 import { EditAnimalScreen } from './screens/EditAnimal';
 import { WebsiteOnlyScreen } from './screens/WebsiteOnly';
-import { MoreScreen, NotificationsScreen, ProfileScreen, SettingsScreen, PlaceholderScreen } from './screens/More';
+import { MoreScreen, NotificationsScreen, ProfileScreen, SettingsScreen } from './screens/More';
 
 function PrivateRoute({ children }: { children: React.ReactElement }) {
   const { mode, user } = useApp();
@@ -65,7 +66,7 @@ function AppRoutes() {
       <Route path="/more/notifications" element={<PrivateRoute><NotificationsScreen /></PrivateRoute>} />
       <Route path="/more/profile" element={<PrivateRoute><ProfileScreen /></PrivateRoute>} />
       <Route path="/more/settings" element={<PrivateRoute><SettingsScreen /></PrivateRoute>} />
-      <Route path="/more/reports" element={<PrivateRoute><PlaceholderScreen title="Reports" description="Exportable milk, health, breeding and financial reports from the live backend will appear here." /></PrivateRoute>} />
+      <Route path="/more/reports" element={<PrivateRoute><ReportsScreen /></PrivateRoute>} />
       <Route path="/more/workers" element={<PrivateRoute><WorkersScreen /></PrivateRoute>} />
       <Route path="/more/help" element={<PrivateRoute><HelpScreen /></PrivateRoute>} />
 

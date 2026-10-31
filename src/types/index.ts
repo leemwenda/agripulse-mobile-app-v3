@@ -51,6 +51,7 @@ export interface MilkProduction {
   animalId: number;
   farmId: number;
   productionDate: string;
+  session?: 'morning' | 'evening';
   quantityLiters: number;
   notes?: string | null;
   recordedBy?: number | null;

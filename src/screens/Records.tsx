@@ -21,7 +21,7 @@ export function MilkScreen() {
   const animals = useAnimalOptions();
   const { data, loading, error, reload } = useRemoteData(() => MilkApi.list());
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ animalId: '', productionDate: new Date().toISOString().slice(0, 10), quantityLiters: '', notes: '' });
+  const [form, setForm] = useState({ animalId: '', productionDate: new Date().toISOString().slice(0, 10), quantityLiters: '', session: 'morning', notes: '' });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -40,13 +40,13 @@ export function MilkScreen() {
     }
     setSaving(true);
     try {
-      await MilkApi.create({ animalId: Number(form.animalId), productionDate: form.productionDate, quantityLiters: Number(form.quantityLiters), notes: form.notes });
+      await MilkApi.create({ animalId: Number(form.animalId), productionDate: form.productionDate, quantityLiters: Number(form.quantityLiters), session: form.session as 'morning' | 'evening', notes: form.notes });
       pushToast({ title: 'Milk recorded', tone: 'success' });
       reload();
       setOpen(false);
-      setForm({ animalId: '', productionDate: new Date().toISOString().slice(0, 10), quantityLiters: '', notes: '' });
+      setForm({ animalId: '', productionDate: new Date().toISOString().slice(0, 10), quantityLiters: '', session: 'morning', notes: '' });
     } catch (err: any) {
-      setFormError(err?.message?.includes('already exists') ? 'A record for this animal on this date already exists. Edit it instead of creating a duplicate.' : err?.message || 'Could not save this record.');
+      setFormError(err?.message?.includes('already exists') ? 'A record for this animal, date and session already exists. Edit it instead of creating a duplicate.' : err?.message || 'Could not save this record.');
     } finally {
       setSaving(false);
     }
@@ -67,7 +67,7 @@ export function MilkScreen() {
             <Card key={r.id} className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-slate-900">{r.animal?.name || animals.find((a) => a.id === r.animalId)?.name || `Animal #${r.animalId}`}</p>
-                <p className="text-xs text-slate-500">{formatDate(r.productionDate)}</p>
+                <p className="text-xs text-slate-500">{formatDate(r.productionDate)}{r.session ? ` · ${r.session === 'evening' ? 'Evening' : 'Morning'}` : ''}</p>
               </div>
               <span className="text-sm font-bold text-emerald-700">{formatLiters(r.quantityLiters)}</span>
             </Card>
@@ -85,6 +85,20 @@ export function MilkScreen() {
           </FormField>
           <FormField label="Date *">
             <TextInput type="date" required max={new Date().toISOString().slice(0, 10)} value={form.productionDate} onChange={(e) => setForm({ ...form, productionDate: e.target.value })} />
+          </FormField>
+          <FormField label="Milking session *">
+            <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
+              {(['morning', 'evening'] as const).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setForm({ ...form, session: s })}
+                  className={`flex-1 rounded-lg py-2 text-xs font-bold capitalize transition ${form.session === s ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-500'}`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
           </FormField>
           <FormField label="Quantity (liters) *">
             <TextInput type="number" inputMode="decimal" min="0.1" step="0.1" required value={form.quantityLiters} onChange={(e) => setForm({ ...form, quantityLiters: e.target.value })} />

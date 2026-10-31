@@ -55,7 +55,7 @@ export const MilkApi = {
     const qs = new URLSearchParams(params as Record<string, string>).toString();
     return http.get<{ records: MilkProduction[] }>(`/milk${qs ? `?${qs}` : ''}`);
   },
-  create: (payload: { animalId: number; productionDate: string; quantityLiters: number; notes?: string }) =>
+  create: (payload: { animalId: number; productionDate: string; session?: 'morning' | 'evening'; quantityLiters: number; notes?: string }) =>
     http.post<{ record: MilkProduction }>('/milk', payload),
   update: (id: number, payload: Partial<MilkProduction>) => http.put<{ record: MilkProduction }>(`/milk/${id}`, payload),
   remove: (id: number) => http.delete<{ message: string }>(`/milk/${id}`),
@@ -156,6 +156,13 @@ export const IssuesApi = {
   list: () => http.get<{ issues: SupportIssue[] }>('/issues'),
   create: (payload: { title: string; description: string; category: string; priority: string }) =>
     http.post<{ issue: unknown }>('/issues', payload),
+};
+
+export const ReportsApi = {
+  milk: () => http.get<{
+    topProducers: { animalId: number; _sum: { quantityLiters: string | number | null }; _count: { id: number }; animal?: { name: string; tagNumber: string } }[];
+    trend: { month: string; total: number }[];
+  }>('/reports/milk'),
 };
 
 export function clearSession() {
