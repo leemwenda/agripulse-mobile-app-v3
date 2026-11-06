@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Send, AlertTriangle, Loader2, Info, Trash2 } from 'lucide-react';
 import { AuthedShell } from '../components/layout';
 import { Button, Card } from '../components/ui';
+import { softSpring } from '../lib/motion';
 import { useApp } from '../context/AppContext';
 import { AiApi } from '../lib/api';
 import type { AiMessage } from '../types';
@@ -92,17 +94,28 @@ export function AIAdvisorScreen() {
 
   return (
     <AuthedShell title="AI Advisor" right={
-      <button onClick={startNewChat} disabled={initializing} className="rounded-full bg-slate-100 p-2 text-slate-600 active:scale-95 disabled:opacity-50" aria-label="New chat">
+      <motion.button
+        whileTap={{ scale: 0.92 }}
+        onClick={startNewChat}
+        disabled={initializing}
+        className="rounded-full bg-slate-100 p-2 text-slate-600 disabled:opacity-50"
+        aria-label="New chat"
+      >
         <Trash2 className="h-4.5 w-4.5" />
-      </button>
+      </motion.button>
     }>
       <div className="flex h-full flex-col gap-3">
-        <div className="flex items-start gap-2 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-xs text-indigo-800">
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={softSpring}
+          className="flex items-start gap-2 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-xs text-indigo-800"
+        >
           <Info className="mt-0.5 h-4 w-4 shrink-0" />
           <span>
             Advisory guidance only — not a substitute for professional veterinary diagnosis. Answers are based on your farm records.
           </span>
-        </div>
+        </motion.div>
 
         {initializing && (
           <div className="flex flex-1 items-center justify-center text-sm text-slate-400">
@@ -124,33 +137,60 @@ export function AIAdvisorScreen() {
           <>
             <div className="flex-1 space-y-3 overflow-y-auto">
               {messages.length === 0 && (
-                <div className="space-y-2 pt-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={softSpring}
+                  className="space-y-2 pt-4"
+                >
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
                     <Sparkles className="h-6 w-6" />
                   </div>
                   <p className="text-center text-sm font-semibold text-slate-700">Ask about your farm</p>
                   <div className="grid grid-cols-1 gap-2 pt-2">
-                    {QUICK_PROMPTS.map((p) => (
-                      <button key={p} onClick={() => send(p)} className="rounded-xl border border-slate-200 bg-white p-3 text-left text-xs font-medium text-slate-700 active:scale-[0.99]">
+                    {QUICK_PROMPTS.map((p, i) => (
+                      <motion.button
+                        key={p}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: 0.05 * i, ease: [0.22, 1, 0.36, 1] }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => send(p)}
+                        className="rounded-xl border border-slate-200 bg-white p-3 text-left text-xs font-medium text-slate-700"
+                      >
                         {p}
-                      </button>
+                      </motion.button>
                     ))}
                   </div>
-                </div>
+                </motion.div>
               )}
-              {messages.map((m) => (
-                <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${m.role === 'user' ? 'bg-emerald-700 text-white' : 'bg-white border border-slate-200 text-slate-800'}`}>
-                    {m.message}
-                  </div>
-                </div>
-              ))}
+              <AnimatePresence initial={false}>
+                {messages.map((m) => (
+                  <motion.div
+                    key={m.id}
+                    layout
+                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={softSpring}
+                    className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${m.role === 'user' ? 'bg-emerald-700 text-white' : 'bg-white border border-slate-200 text-slate-800'}`}>
+                      {m.message}
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
               {sending && (
-                <div className="flex justify-start">
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex justify-start"
+                >
                   <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-400">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…
                   </div>
-                </div>
+                </motion.div>
               )}
               <div ref={bottomRef} />
             </div>
@@ -165,9 +205,11 @@ export function AIAdvisorScreen() {
                 placeholder="Ask the AI Advisor…"
                 className="h-11 flex-1 rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
               />
-              <Button type="submit" size="md" disabled={!input.trim() || sending}>
-                <Send className="h-4 w-4" />
-              </Button>
+              <motion.div whileTap={{ scale: 0.94 }}>
+                <Button type="submit" size="md" disabled={!input.trim() || sending}>
+                  <Send className="h-4 w-4" />
+                </Button>
+              </motion.div>
             </form>
           </>
         )}

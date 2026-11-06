@@ -1,6 +1,6 @@
 // Typed endpoint functions — mapped 1:1 to real, verified AgriPulse routes.
 // See docs/mobile-api-mapping.md for the full capability matrix.
-import { http, tokenStore } from './httpClient';
+import { http, tokenStore, API_BASE_URL } from './httpClient';
 import type {
   AuthUser,
   Animal,
@@ -130,12 +130,25 @@ export const PassportApi = {
 export interface FarmNotification {
   id: string;
   type: string;
+  category?: string;
   title: string;
   message: string;
+  isRead?: boolean;
   createdAt: string;
 }
 export const NotificationsApi = {
-  list: () => http.get<{ notifications: FarmNotification[]; unread: number }>('/notifications'),
+  list: async (): Promise<{ notifications: FarmNotification[]; unread: number }> => {
+    const [ann, farm] = await Promise.all([
+      http.get<{ notifications: FarmNotification[]; unread?: number }>('/notifications').catch(() => ({ notifications: [] })),
+      http.get<{ notifications: FarmNotification[]; unread: number }>('/farm-notifications').catch(() => ({ notifications: [], unread: 0 })),
+    ]);
+    const merged = [...farm.notifications, ...ann.notifications]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return { notifications: merged, unread: farm.unread };
+  },
+  markRead: (id: string) => http.put<{ ok: boolean }>(`/farm-notifications/${id}/read`, {}),
+  markAllRead: () => http.put<{ ok: boolean; updated: number }>('/farm-notifications/read-all', {}),
+  delete: (id: string) => http.delete<{ ok: boolean }>(`/farm-notifications/${id}`),
 };
 
 // ---- Workers: /api/workers (farm owner manages; server enforces roles)
@@ -165,11 +178,52 @@ export const IssuesApi = {
     http.post<{ issue: unknown }>('/issues', payload),
 };
 
+export type ExportType = 'animals' | 'milk' | 'health' | 'breeding' | 'financial';
+
 export const ReportsApi = {
+  animals: () => http.get<{
+    total: number;
+    byStatus: { status: string; count: number }[];
+    byCategory: { category: string; count: number }[];
+    byGender: { gender: string; count: number }[];
+    byBreed: { breed: string; count: number }[];
+  }>('/reports/animals'),
   milk: () => http.get<{
-    topProducers: { animalId: number; _sum: { quantityLiters: string | number | null }; _count: { id: number }; animal?: { name: string; tagNumber: string } }[];
+    totalLitres: number;
+    topProducers: { animalId: number; _sum: { quantityLiters: number }; _count: { id: number }; animal?: { name: string; tagNumber: string } | null }[];
     trend: { month: string; total: number }[];
   }>('/reports/milk'),
+  health: () => http.get<{
+    totalRecords: number;
+    topConditions: { condition: string; count: number }[];
+    topVaccinations: { vaccination: string; count: number }[];
+  }>('/reports/health'),
+  breeding: () => http.get<{
+    totalRecords: number;
+    byStatus: { status: string; count: number }[];
+    upcomingBirths: { id: number; animal?: { name: string; tagNumber: string }; expectedBirthDate: string; daysUntil: number | null }[];
+  }>('/reports/breeding'),
+  finance: () => http.get<{
+    totalIncome: number;
+    totalExpense: number;
+    profit: number;
+    byCategory: { category: string; type: string; total: number }[];
+    trend: { month: string; type: string; total: number }[];
+  }>('/reports/finance'),
+  export: async (type: ExportType): Promise<{ text: string; filename: string }> => {
+    const token = tokenStore.get();
+    const res = await fetch(`${API_BASE_URL}/reports/export/${type}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Export failed' }));
+      throw new Error(err.error || `Export failed (${res.status})`);
+    }
+    const text = await res.text();
+    const cd = res.headers.get('Content-Disposition') || '';
+    const m = cd.match(/filename="([^"]+)"/);
+    return { text, filename: m?.[1] || `agripulse-${type}.csv` };
+  },
 };
 
 export const ProfileApi = {

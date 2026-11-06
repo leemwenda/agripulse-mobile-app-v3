@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
-  Milk, Stethoscope, Syringe, Wallet, Bell, User, Settings, HelpCircle, LogOut,
+  Milk, Stethoscope, Syringe, Wallet, Bell, User, Settings, HelpCircle, LogOut, Trash2,
   ChevronRight, Users, FileText, Moon, ArrowRightLeft,
 } from 'lucide-react';
 import { AuthedShell } from '../components/layout';
 import { Card, EmptyState, Button, ConfirmDialog, SkeletonList, FormField, TextInput } from '../components/ui';
+import { fadeUp, staggerContainer } from '../lib/motion';
 import { useApp } from '../context/AppContext';
 import { formatDateTime, initials } from '../lib/format';
 import { useRemoteData } from '../lib/useRemoteData';
-import { NotificationsApi, ProfileApi } from '../lib/api';
+import { NotificationsApi, ProfileApi, type FarmNotification } from '../lib/api';
 import { ErrorBanner } from './Home';
 import { useTheme } from '../lib/theme';
 
@@ -36,38 +38,51 @@ export function MoreScreen() {
 
   return (
     <AuthedShell title="More">
-      <div className="space-y-4">
-        <Card onClick={() => navigate('/more/profile')} className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-700 text-sm font-bold text-white">
-            {user ? initials(user.name) : '?'}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-bold text-slate-900">{user?.name}</p>
-            <p className="text-xs text-slate-500">{user ? roleLabel[user.role] : ''} {user?.farmName ? `· ${user.farmName}` : ''}</p>
-          </div>
-          <ChevronRight className="h-4 w-4 text-slate-300" />
-        </Card>
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className="space-y-4"
+      >
+        <motion.div variants={fadeUp}>
+          <Card onClick={() => navigate('/more/profile')} className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-700 text-sm font-bold text-white">
+              {user ? initials(user.name) : '?'}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-bold text-slate-900">{user?.name}</p>
+              <p className="text-xs text-slate-500">{user ? roleLabel[user.role] : ''} {user?.farmName ? `· ${user.farmName}` : ''}</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-slate-300" />
+          </Card>
+        </motion.div>
 
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <motion.div variants={fadeUp} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
           {items.map((item, i) => (
-            <button
+            <motion.button
               key={item.label}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.3, delay: 0.03 * i }}
+              whileTap={{ scale: 0.99 }}
               onClick={() => navigate(item.to)}
               className={`flex w-full items-center gap-3 px-4 py-3.5 text-left ${i !== items.length - 1 ? 'border-b border-slate-100' : ''}`}
             >
               <item.icon className="h-4.5 w-4.5 text-slate-500" />
               <span className="flex-1 text-sm font-medium text-slate-800">{item.label}</span>
               <ChevronRight className="h-4 w-4 text-slate-300" />
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
 
-        <Button variant="outline" fullWidth className="border-red-200 text-red-600" onClick={() => setConfirmLogout(true)}>
-          <LogOut className="h-4 w-4" /> Sign out
-        </Button>
+        <motion.div variants={fadeUp}>
+          <Button variant="outline" fullWidth className="border-red-200 text-red-600" onClick={() => setConfirmLogout(true)}>
+            <LogOut className="h-4 w-4" /> Sign out
+          </Button>
+        </motion.div>
 
-        <p className="pb-4 text-center text-[11px] text-slate-400">AgriPulse Mobile · v1.0.0</p>
-      </div>
+        <motion.p variants={fadeUp} className="pb-4 text-center text-[11px] text-slate-400">AgriPulse Mobile · v1.0.0</motion.p>
+      </motion.div>
 
       <ConfirmDialog
         open={confirmLogout}
@@ -83,28 +98,165 @@ export function MoreScreen() {
 }
 
 export function NotificationsScreen() {
+  const { pushToast } = useApp();
   const { data, loading, error, reload } = useRemoteData(() => NotificationsApi.list());
-  const notifications = data?.notifications || [];
+  const [items, setItems] = useState<FarmNotification[]>([]);
+  const [filter, setFilter] = useState<'all' | 'unread'>('all');
+  const [toDelete, setToDelete] = useState<{ id: string; title: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [markingAll, setMarkingAll] = useState(false);
+
+  useEffect(() => {
+    if (data?.notifications) setItems(data.notifications);
+  }, [data]);
+
+  const isFarmNotif = (n: FarmNotification) => /^\d+$/.test(String(n.id));
+  const unreadCount = items.filter((n) => isFarmNotif(n) && !n.isRead).length;
+  const visible = filter === 'unread' ? items.filter((n) => isFarmNotif(n) && !n.isRead) : items;
+
+  async function handleMarkRead(n: FarmNotification) {
+    if (!isFarmNotif(n) || n.isRead) return;
+    setItems((prev) => prev.map((x) => x.id === n.id ? { ...x, isRead: true } : x));
+    try {
+      await NotificationsApi.markRead(n.id);
+      pushToast({ title: 'Marked as read', tone: 'success' });
+    } catch {
+      setItems((prev) => prev.map((x) => x.id === n.id ? { ...x, isRead: false } : x));
+      pushToast({ title: 'Could not mark as read', tone: 'error' });
+    }
+  }
+
+  async function handleMarkAll() {
+    if (markingAll || unreadCount === 0) return;
+    setMarkingAll(true);
+    const snapshot = items;
+    setItems((prev) => prev.map((x) => isFarmNotif(x) ? { ...x, isRead: true } : x));
+    try {
+      await NotificationsApi.markAllRead();
+      pushToast({ title: 'All marked as read', tone: 'success' });
+    } catch {
+      setItems(snapshot);
+      pushToast({ title: 'Could not mark all as read', tone: 'error' });
+    } finally {
+      setMarkingAll(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!toDelete || deleting) return;
+    setDeleting(true);
+    const snapshot = items;
+    setItems((prev) => prev.filter((x) => x.id !== toDelete.id));
+    try {
+      await NotificationsApi.delete(toDelete.id);
+      pushToast({ title: 'Notification deleted', tone: 'success' });
+      setToDelete(null);
+    } catch {
+      setItems(snapshot);
+      pushToast({ title: 'Could not delete', tone: 'error' });
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   const dot: Record<string, string> = { danger: 'bg-red-500', warning: 'bg-amber-500', info: 'bg-sky-500' };
+
   return (
-    <AuthedShell title="Notifications" showBack>
-      <div className="space-y-2.5">
+    <AuthedShell
+      title="Notifications"
+      showBack
+      right={
+        unreadCount > 0 ? (
+          <button
+            onClick={handleMarkAll}
+            disabled={markingAll}
+            className="rounded-full px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+          >
+            {markingAll ? 'Marking…' : 'Mark all read'}
+          </button>
+        ) : null
+      }
+    >
+      <div className="space-y-3">
+        <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
+          {(['all', 'unread'] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`flex-1 rounded-lg py-2 text-xs font-bold capitalize transition ${
+                filter === f ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-500'
+              }`}
+            >
+              {f === 'all' ? `All (${items.length})` : `Unread (${unreadCount})`}
+            </button>
+          ))}
+        </div>
+
         {error && <ErrorBanner message={error} onRetry={reload} />}
-        {loading && <SkeletonList rows={3} />}
-        {!loading && !error && notifications.length === 0 && (
-          <EmptyState icon={<Bell className="h-6 w-6" />} title="No notifications" description="Important farm events and reminders will appear here." />
+        {loading && items.length === 0 && <SkeletonList rows={3} />}
+
+        {!loading && !error && visible.length === 0 && (
+          <EmptyState
+            icon={<Bell className="h-6 w-6" />}
+            title={filter === 'unread' ? 'No unread notifications' : 'No notifications'}
+            description={filter === 'unread' ? 'You are all caught up.' : 'Important farm events and reminders will appear here.'}
+          />
         )}
-        {notifications.map((n) => (
-          <Card key={n.id} className="flex items-start gap-3">
-            <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${dot[n.type] || 'bg-sky-500'}`} />
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-slate-900">{n.title}</p>
-              <p className="mt-0.5 text-xs text-slate-500">{n.message}</p>
-              <p className="mt-1 text-[11px] text-slate-400">{formatDateTime(n.createdAt)}</p>
-            </div>
-          </Card>
-        ))}
+
+        {visible.map((n) => {
+          const editable = isFarmNotif(n);
+          const unread = editable && !n.isRead;
+          return (
+            <Card
+              key={n.id}
+              onClick={unread ? () => handleMarkRead(n) : undefined}
+              className={`flex items-start gap-3 ${unread ? 'border-l-4 border-l-emerald-600' : ''}`}
+            >
+              <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${unread ? 'bg-emerald-500' : (dot[n.type] || 'bg-slate-300')}`} />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <p className={`text-sm ${unread ? 'font-bold text-slate-900' : 'font-semibold text-slate-700'}`}>
+                    {n.title}
+                  </p>
+                  <div className="flex shrink-0 items-center gap-1">
+                    {unread && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleMarkRead(n); }}
+                        className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700 hover:bg-emerald-100"
+                        aria-label="Mark as read"
+                      >
+                        ✓ Read
+                      </button>
+                    )}
+                    {editable && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setToDelete({ id: n.id, title: n.title }); }}
+                        className="rounded-full p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                        aria-label="Delete notification"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <p className={`mt-0.5 text-xs ${unread ? 'text-slate-600' : 'text-slate-500'}`}>{n.message}</p>
+                <p className="mt-1 text-[11px] text-slate-400">{formatDateTime(n.createdAt)}</p>
+              </div>
+            </Card>
+          );
+        })}
       </div>
+
+      <ConfirmDialog
+        open={!!toDelete}
+        title="Delete notification?"
+        description={toDelete ? `"${toDelete.title}" will be removed permanently.` : ''}
+        confirmLabel="Delete"
+        tone="danger"
+        loading={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setToDelete(null)}
+      />
     </AuthedShell>
   );
 }

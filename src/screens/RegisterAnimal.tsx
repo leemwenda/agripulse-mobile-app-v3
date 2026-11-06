@@ -46,7 +46,11 @@ export function RegisterAnimalScreen() {
     setLoading(true);
     setSubmitted(true);
     try {
-      const res = await AnimalsApi.create(form as any);
+      const payload = {
+        ...form,
+        tagNumber: form.tagNumber.trim(),
+      };
+      const res = await AnimalsApi.create(payload as any);
       let failed = 0;
       for (let i = 0; i < photos.length; i++) {
         try {

@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   Milk, Stethoscope, Syringe, PawPrint, Sparkles, PlusCircle, AlertTriangle,
@@ -5,6 +6,8 @@ import {
 } from 'lucide-react';
 import { AuthedShell } from '../components/layout';
 import { Card, SectionHeader, StatCard, SkeletonList, EmptyState, Button } from '../components/ui';
+import AnimatedCounter from '../components/ui/AnimatedCounter';
+import { fadeUp, staggerContainer } from '../lib/motion';
 import { useApp } from '../context/AppContext';
 import { useRemoteData } from '../lib/useRemoteData';
 import { DashboardApi } from '../lib/api';
@@ -47,7 +50,7 @@ export function HomeScreen() {
           id: 'milk-decline',
           tone: 'warning',
           icon: TrendingDown,
-          title: 'Milk production dropped versus this week\'s average',
+          title: "Milk production dropped versus this week's average",
           description: `Today's recorded total (${formatLiters(last)}) is notably below the recent daily average (${formatLiters(avgPrev)}). Check feed, water and animal health.`,
           action: () => navigate('/farm/milk'),
         });
@@ -67,45 +70,85 @@ export function HomeScreen() {
 
   return (
     <AuthedShell title={`Hi, ${user?.name?.split(' ')[0] || 'there'}`}>
-      <div className="space-y-5 pb-4">
-        {error && <ErrorBanner message={error} onRetry={reload} />}
-        {loading && <SkeletonList rows={3} />}
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className="space-y-5 pb-4"
+      >
+        {error && (
+          <motion.div variants={fadeUp}>
+            <ErrorBanner message={error} onRetry={reload} />
+          </motion.div>
+        )}
+        {loading && (
+          <motion.div variants={fadeUp}>
+            <SkeletonList rows={3} />
+          </motion.div>
+        )}
 
         {data && (
           <>
-            <section>
+            <motion.section variants={fadeUp}>
               <SectionHeader title="Farm snapshot" />
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                <StatCard label="Registered animals" value={data.stats.totalAnimals} hint={`${data.stats.femaleAnimals} female · ${data.stats.maleAnimals} male`} onClick={() => navigate('/farm')} />
-                <StatCard label="Milk today" value={formatLiters(data.stats.todayMilk)} hint={`${formatLiters(data.stats.monthMilk)} this month`} onClick={() => navigate('/farm/milk')} />
-                <StatCard label="Pregnant animals" value={data.stats.activePregnant} hint="Active pregnancies" onClick={() => navigate('/farm/breeding')} />
-                <StatCard label="Profit (this month)" value={formatKES(data.stats.monthProfit)} hint={`${formatKES(data.stats.monthIncome)} in · ${formatKES(data.stats.monthExpense)} out`} onClick={() => navigate('/farm/finance')} />
+                <StatCard
+                  label="Registered animals"
+                  value={<AnimatedCounter value={data.stats.totalAnimals} />}
+                  hint={`${data.stats.femaleAnimals} female · ${data.stats.maleAnimals} male`}
+                  onClick={() => navigate('/farm')}
+                />
+                <StatCard
+                  label="Milk today"
+                  value={<AnimatedCounter value={Number(data.stats.todayMilk) || 0} suffix=" L" decimals={1} />}
+                  hint={`${formatLiters(data.stats.monthMilk)} this month`}
+                  onClick={() => navigate('/farm/milk')}
+                />
+                <StatCard
+                  label="Pregnant animals"
+                  value={<AnimatedCounter value={data.stats.activePregnant} />}
+                  hint="Active pregnancies"
+                  onClick={() => navigate('/farm/breeding')}
+                />
+                <StatCard
+                  label="Profit (this month)"
+                  value={<AnimatedCounter value={Number(data.stats.monthProfit) || 0} format={(n) => formatKES(n)} />}
+                  hint={`${formatKES(data.stats.monthIncome)} in · ${formatKES(data.stats.monthExpense)} out`}
+                  onClick={() => navigate('/farm/finance')}
+                />
               </div>
-            </section>
+            </motion.section>
 
-            <section>
+            <motion.section variants={fadeUp}>
               <SectionHeader title="Needs your attention" />
               {priorities.length === 0 ? (
                 <EmptyState title="All caught up" description="No urgent items right now. Great work keeping records up to date." />
               ) : (
                 <div className="space-y-2.5 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
-                  {priorities.map((p) => (
-                    <Card key={p.id} onClick={p.action} className="flex items-start gap-3">
-                      <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${p.tone === 'danger' ? 'bg-red-100 text-red-600' : p.tone === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-sky-100 text-sky-700'}`}>
-                        <p.icon className="h-4.5 w-4.5" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-slate-900">{p.title}</p>
-                        <p className="mt-0.5 text-xs text-slate-500">{p.description}</p>
-                      </div>
-                      <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-slate-300" />
-                    </Card>
+                  {priorities.map((p, i) => (
+                    <motion.div
+                      key={p.id}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.4, delay: 0.05 * i }}
+                    >
+                      <Card onClick={p.action} className="flex items-start gap-3">
+                        <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${p.tone === 'danger' ? 'bg-red-100 text-red-600' : p.tone === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-sky-100 text-sky-700'}`}>
+                          <p.icon className="h-4.5 w-4.5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-slate-900">{p.title}</p>
+                          <p className="mt-0.5 text-xs text-slate-500">{p.description}</p>
+                        </div>
+                        <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-slate-300" />
+                      </Card>
+                    </motion.div>
                   ))}
                 </div>
               )}
-            </section>
+            </motion.section>
 
-            <section>
+            <motion.section variants={fadeUp}>
               <SectionHeader title="Quick actions" />
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 <QuickAction icon={PawPrint} label="Register animal" onClick={() => navigate('/farm/new')} />
@@ -115,10 +158,10 @@ export function HomeScreen() {
                 <QuickAction icon={Sparkles} label="Ask AI Advisor" onClick={() => navigate('/ai')} />
                 <QuickAction icon={Wallet} label="Finance" onClick={() => navigate('/farm/finance')} />
               </div>
-            </section>
+            </motion.section>
 
             {data.recentHealth.length > 0 && (
-              <section>
+              <motion.section variants={fadeUp}>
                 <SectionHeader title="Recent health events" action={<button onClick={() => navigate('/farm/health')} className="text-xs font-semibold text-emerald-700">View all</button>} />
                 <div className="space-y-2.5 md:grid md:grid-cols-3 md:gap-3 md:space-y-0">
                   {data.recentHealth.slice(0, 3).map((h) => (
@@ -128,24 +171,28 @@ export function HomeScreen() {
                     </Card>
                   ))}
                 </div>
-              </section>
+              </motion.section>
             )}
           </>
         )}
-
-      </div>
+      </motion.div>
     </AuthedShell>
   );
 }
 
 function QuickAction({ icon: Icon, label, onClick }: { icon: typeof PlusCircle; label: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="flex flex-col items-start gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm active:scale-[0.98] transition-transform">
+    <motion.button
+      whileTap={{ scale: 0.97 }}
+      transition={{ duration: 0.15 }}
+      onClick={onClick}
+      className="flex flex-col items-start gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm"
+    >
       <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
         <Icon className="h-4.5 w-4.5" />
       </div>
       <span className="text-xs font-bold text-slate-800">{label}</span>
-    </button>
+    </motion.button>
   );
 }
 

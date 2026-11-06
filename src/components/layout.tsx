@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { useLocation, useNavigate, NavLink } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Bell, ChevronLeft, Home, Menu, Moon, PawPrint, Sparkles, Sun } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { DemoModeBanner, OfflineBanner, ToastStack } from './ui';
@@ -9,7 +10,6 @@ import { NotificationsApi } from '../lib/api';
 import { useTheme } from '../lib/theme';
 
 export function PhoneFrame({ children }: { children: ReactNode }) {
-  // Full-screen adaptive container. Layout (rail, columns) is decided by the children.
   return <div className="flex h-dvh w-full overflow-hidden bg-slate-100">{children}</div>;
 }
 
@@ -67,7 +67,7 @@ export function TopBar({ title, onBack, right }: { title: string; onBack?: () =>
 
 const TABS = [
   { to: '/home', label: 'Home', icon: Home },
-  { to: '/farm', label: 'My Farm', icon: PawPrint },
+  { to: '/farm', label: 'Animals', icon: PawPrint },
   { to: '/ai', label: 'AI Advisor', icon: Sparkles },
   { to: '/more', label: 'More', icon: Menu },
 ];
@@ -84,14 +84,19 @@ export function BottomNav() {
           to={tab.to}
           className={({ isActive }) =>
             cn(
-              'flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-semibold transition',
+              'relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-semibold transition',
               isActive ? 'text-emerald-700' : 'text-slate-400',
             )
           }
         >
           {({ isActive }) => (
             <>
-              {isActive && <span className="absolute top-0 h-1 w-8 rounded-b-md bg-emerald-600" />}
+              {isActive && (
+                <motion.span
+                  layoutId="nav-underline"
+                  className="absolute top-0 h-1 w-8 rounded-b-md bg-emerald-600"
+                />
+              )}
               <tab.icon className={cn('h-5 w-5', isActive && 'stroke-[2.5] text-emerald-700')} />
               <span className={cn(isActive && 'font-bold text-emerald-800')}>{tab.label}</span>
             </>

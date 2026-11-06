@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Search, Plus, PawPrint, Milk, Stethoscope, Syringe, Wallet, QrCode, ChevronRight, Tag } from 'lucide-react';
 import { useApp } from '../context/AppContext';
@@ -8,6 +9,7 @@ import {
   Card, EmptyState, SkeletonList, Button, TextInput, Select,
   StatusPill, Badge,
 } from '../components/ui';
+import { fadeUp, staggerContainer } from '../lib/motion';
 import { useRemoteData } from '../lib/useRemoteData';
 import { AnimalsApi, MilkApi, HealthApi, BreedingApi } from '../lib/api';
 import { ageFromDOB, formatDate, formatLiters } from '../lib/format';
@@ -18,6 +20,7 @@ export function FarmListScreen() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('active');
+  const [category, setCategory] = useState('all');
   const { data, loading, error, reload } = useRemoteData(() => AnimalsApi.list());
 
   const animals = data?.animals || [];
@@ -26,30 +29,40 @@ export function FarmListScreen() {
       animals.filter((a) => {
         const matchesSearch = !search || a.name.toLowerCase().includes(search.toLowerCase()) || a.tagNumber.toLowerCase().includes(search.toLowerCase());
         const matchesStatus = status === 'all' || a.status === status;
-        return matchesSearch && matchesStatus;
+        const matchesCategory = category === 'all' || a.category === category;
+        return matchesSearch && matchesStatus && matchesCategory;
       }),
-    [animals, search, status],
+    [animals, search, status, category],
   );
 
   return (
     <AuthedShell
       title="My Farm"
       right={
-        <button onClick={() => navigate('/farm/new')} className="rounded-full bg-emerald-700 p-2 text-white active:scale-95">
+        <motion.button
+          whileTap={{ scale: 0.92 }}
+          onClick={() => navigate('/farm/new')}
+          className="rounded-full bg-emerald-700 p-2 text-white"
+        >
           <Plus className="h-4.5 w-4.5" />
-        </button>
+        </motion.button>
       }
     >
-      <div className="space-y-4">
-        <div className="grid grid-cols-5 gap-2 md:mx-auto md:max-w-2xl md:gap-4">
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className="space-y-4"
+      >
+        <motion.div variants={fadeUp} className="grid grid-cols-5 gap-2 md:mx-auto md:max-w-2xl md:gap-4">
           <ShortcutButton icon={Milk} label="Milk" onClick={() => navigate('/farm/milk')} />
           <ShortcutButton icon={Stethoscope} label="Health" onClick={() => navigate('/farm/health')} />
           <ShortcutButton icon={Syringe} label="Breeding" onClick={() => navigate('/farm/breeding')} />
           <ShortcutButton icon={Wallet} label="Finance" onClick={() => navigate('/farm/finance')} />
           <ShortcutButton icon={Tag} label="Sold" onClick={() => setStatus('sold')} />
-        </div>
+        </motion.div>
 
-        <div className="flex gap-2">
+        <motion.div variants={fadeUp} className="flex gap-2">
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <TextInput placeholder="Search by name or tag" className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -60,7 +73,19 @@ export function FarmListScreen() {
             <option value="deceased">Deceased</option>
             <option value="all">All</option>
           </Select>
-        </div>
+        </motion.div>
+
+        <motion.div variants={fadeUp} className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+          {['all', 'calf', 'heifer', 'cow', 'bull_calf', 'young_bull', 'bull'].map((c) => (
+            <button
+              key={c}
+              onClick={() => setCategory(c)}
+              className={'shrink-0 rounded-full px-3 py-1 text-xs font-semibold capitalize ' + (category === c ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600')}
+            >
+              {c.replace('_', ' ')}
+            </button>
+          ))}
+        </motion.div>
 
         {error && <ErrorBanner message={error} onRetry={reload} />}
         {loading && <SkeletonList rows={4} />}
@@ -75,37 +100,54 @@ export function FarmListScreen() {
         )}
 
         <div className="space-y-2.5 md:grid md:grid-cols-2 md:gap-3 md:space-y-0 lg:grid-cols-3">
-          {filtered.map((a) => (
-            <Card key={a.id} onClick={() => navigate(`/farm/${a.id}`)} className="flex items-center gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-emerald-50 text-emerald-700">
-                {a.photos && a.photos[0] ? (
-                  <img src={API_BASE_URL.replace(/\/api$/, '') + a.photos[0].url} alt={a.name} className="h-full w-full object-cover" />
-                ) : (
-                  <PawPrint className="h-6 w-6" />
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="truncate text-sm font-bold text-slate-900">{a.name}</p>
-                  <StatusPill status={a.status} />
+          {filtered.map((a, i) => (
+            <motion.div
+              key={a.id}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.4, delay: 0.03 * i }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Card onClick={() => navigate(`/farm/${a.id}`)} className="flex items-center gap-3">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-emerald-50 text-emerald-700">
+                  {a.photos && a.photos[0] ? (
+                    <img src={API_BASE_URL.replace(/\/api$/, '') + a.photos[0].url} alt={a.name} className="h-full w-full object-cover" />
+                  ) : (
+                    <PawPrint className="h-6 w-6" />
+                  )}
                 </div>
-                <p className="mt-0.5 text-xs text-slate-500">{a.tagNumber} · {a.breed} · {ageFromDOB(a.dateOfBirth)}</p>
-              </div>
-              <ChevronRight className="h-4 w-4 shrink-0 text-slate-300" />
-            </Card>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="truncate text-sm font-bold text-slate-900">{a.name}</p>
+                    <StatusPill status={a.status} />
+                  </div>
+                  <p className="mt-0.5 text-xs text-slate-500">{a.tagNumber} · {a.breed} · {ageFromDOB(a.dateOfBirth)}</p>
+                  {a.category && (
+                    <span className="mt-1 inline-block rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold capitalize text-emerald-700">
+                      {a.category.replace('_', ' ')}
+                    </span>
+                  )}
+                </div>
+                <ChevronRight className="h-4 w-4 shrink-0 text-slate-300" />
+              </Card>
+            </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
     </AuthedShell>
   );
 }
 
 function ShortcutButton({ icon: Icon, label, onClick }: { icon: typeof Milk; label: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 bg-white py-3 active:scale-95">
+    <motion.button
+      whileTap={{ scale: 0.94 }}
+      onClick={onClick}
+      className="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 bg-white py-3"
+    >
       <Icon className="h-4.5 w-4.5 text-emerald-700" />
       <span className="text-[11px] font-semibold text-slate-600">{label}</span>
-    </button>
+    </motion.button>
   );
 }
 

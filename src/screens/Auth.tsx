@@ -1,14 +1,14 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Loader2 } from 'lucide-react';
 import { AuthLayout } from '../components/layout';
 import { Button, FormField, TextInput, ToastStack, BrandLogo } from '../components/ui';
+import { fadeUp, staggerContainer } from '../lib/motion';
 import { useApp } from '../context/AppContext';
 import { AuthApi } from '../lib/api';
 import { isNativeApp, startGoogleSignIn } from '../lib/googleAuth';
 
-// Google's own brand mark (4-color "G"), per Google's sign-in branding
-// guidelines — not the AgriPulse logo.
 function GoogleMark() {
   return (
     <svg className="h-4 w-4" viewBox="0 0 48 48" aria-hidden="true">
@@ -24,9 +24,10 @@ function GoogleButton() {
   const native = isNativeApp();
   const [opening, setOpening] = useState(false);
   return (
-    <button
+    <motion.button
       type="button"
       disabled={!native || opening}
+      whileTap={native ? { scale: 0.98 } : undefined}
       title={native ? undefined : 'Google sign-in requires the Android app — not available in this preview'}
       onClick={async () => {
         setOpening(true);
@@ -36,23 +37,28 @@ function GoogleButton() {
           setOpening(false);
         }
       }}
-      className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 active:scale-[0.99] disabled:opacity-50"
+      className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 disabled:opacity-50"
     >
       {opening ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleMark />}
       Continue with Google
-    </button>
+    </motion.button>
   );
 }
 
 function BrandHeader({ subtitle }: { subtitle: string }) {
   return (
-    <div className="px-6 pb-2 pt-10 text-center">
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.5 }}
+      className="px-6 pb-2 pt-10 text-center"
+    >
       <div className="mx-auto">
         <BrandLogo size={56} />
       </div>
       <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-slate-900">AgriPulse</h1>
       <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
-    </div>
+    </motion.div>
   );
 }
 
@@ -88,26 +94,44 @@ export function LoginScreen() {
   return (
     <AuthLayout>
       <BrandHeader subtitle="Smart livestock management for Kenyan farms" />
-      <form onSubmit={onSubmit} className="space-y-4 px-6 pt-4 pb-32">
-        <FormField label="Email address">
-          <div className="relative">
-            <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <TextInput type="email" required placeholder="you@farm.co.ke" className="pl-9" value={email} onChange={(e) => setEmail(e.target.value)} />
-          </div>
-        </FormField>
-        <FormField label="Password">
-          <div className="relative">
-            <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <TextInput type="password" required placeholder="••••••••" className="pl-9" value={password} onChange={(e) => setPassword(e.target.value)} />
-          </div>
-        </FormField>
-        <label className="flex items-center gap-2 text-sm text-slate-600">
-          <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-emerald-700" />
-          Keep me signed in
-        </label>
+      <motion.form
+        onSubmit={onSubmit}
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className="space-y-4 px-6 pt-4 pb-32"
+      >
+        <motion.div variants={fadeUp}>
+          <FormField label="Email address">
+            <div className="relative">
+              <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <TextInput type="email" required placeholder="you@farm.co.ke" className="pl-9" value={email} onChange={(e) => setEmail(e.target.value)} />
+            </div>
+          </FormField>
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <FormField label="Password">
+            <div className="relative">
+              <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <TextInput type="password" required placeholder="••••••••" className="pl-9" value={password} onChange={(e) => setPassword(e.target.value)} />
+            </div>
+          </FormField>
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <label className="flex items-center gap-2 text-sm text-slate-600">
+            <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-emerald-700" />
+            Keep me signed in
+          </label>
+        </motion.div>
 
         {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700"
+          >
             <p className="font-semibold">Couldn't sign in</p>
             <p className="mt-0.5">{error}</p>
             {apiReachable === false && (
@@ -120,25 +144,36 @@ export function LoginScreen() {
                 Resend verification email
               </button>
             )}
-          </div>
+          </motion.div>
         )}
 
-        <Button type="submit" fullWidth loading={loading}>Sign in</Button>
-      </form>
+        <motion.div variants={fadeUp}>
+          <Button type="submit" fullWidth loading={loading}>Sign in</Button>
+        </motion.div>
+      </motion.form>
 
-      <div className="px-6 pt-4">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.35, duration: 0.4 }}
+        className="px-6 pt-4"
+      >
         <div className="relative my-2 text-center text-xs text-slate-400">
           <span className="relative z-10 bg-slate-50 px-2">or</span>
           <div className="absolute inset-x-0 top-1/2 h-px bg-slate-200" />
         </div>
         <GoogleButton />
-      </div>
+      </motion.div>
 
-
-      <p className="mt-6 pb-8 text-center text-sm text-slate-500">
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.45, duration: 0.4 }}
+        className="mt-6 pb-8 text-center text-sm text-slate-500"
+      >
         New to AgriPulse?{' '}
         <button className="font-semibold text-emerald-700" onClick={() => navigate('/journey')}>Create an account</button>
-      </p>
+      </motion.p>
       <ToastStack />
     </AuthLayout>
   );
@@ -169,13 +204,18 @@ export function RegisterScreen() {
     return (
       <AuthLayout>
         <BrandHeader subtitle="Check your inbox" />
-        <div className="px-6 pt-6 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="px-6 pt-6 text-center"
+        >
           <p className="text-sm text-slate-600">
             If registration is open on the live server, a verification email has been sent to <b>{form.email}</b>.
             Verify your email, then sign in.
           </p>
           <Button className="mt-6" fullWidth onClick={() => navigate('/login')}>Back to sign in</Button>
-        </div>
+        </motion.div>
       </AuthLayout>
     );
   }
@@ -183,34 +223,60 @@ export function RegisterScreen() {
   return (
     <AuthLayout>
       <BrandHeader subtitle="Create your Farm Owner account" />
-      <form onSubmit={onSubmit} className="space-y-4 px-6 pt-4 pb-32">
-        <FormField label="Full name">
-          <TextInput required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-        </FormField>
-        <FormField label="Email address">
-          <TextInput type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-        </FormField>
-        <FormField label="Password" hint="At least 8 characters">
-          <TextInput type="password" required minLength={8} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-        </FormField>
-        <FormField label="Farm name">
-          <TextInput required value={form.farmName} onChange={(e) => setForm({ ...form, farmName: e.target.value })} />
-        </FormField>
-        {error && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">{error}</div>}
-        <Button type="submit" fullWidth loading={loading}>Create account</Button>
-        
-        <div className="pt-2">
+      <motion.form
+        onSubmit={onSubmit}
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className="space-y-4 px-6 pt-4 pb-32"
+      >
+        <motion.div variants={fadeUp}>
+          <FormField label="Full name">
+            <TextInput required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          </FormField>
+        </motion.div>
+        <motion.div variants={fadeUp}>
+          <FormField label="Email address">
+            <TextInput type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+          </FormField>
+        </motion.div>
+        <motion.div variants={fadeUp}>
+          <FormField label="Password" hint="At least 8 characters">
+            <TextInput type="password" required minLength={8} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+          </FormField>
+        </motion.div>
+        <motion.div variants={fadeUp}>
+          <FormField label="Farm name">
+            <TextInput required value={form.farmName} onChange={(e) => setForm({ ...form, farmName: e.target.value })} />
+          </FormField>
+        </motion.div>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700"
+          >
+            {error}
+          </motion.div>
+        )}
+        <motion.div variants={fadeUp}>
+          <Button type="submit" fullWidth loading={loading}>Create account</Button>
+        </motion.div>
+
+        <motion.div variants={fadeUp} className="pt-2">
           <div className="relative my-2 text-center text-xs text-slate-400">
             <span className="relative z-10 bg-slate-50 px-2">or</span>
             <div className="absolute inset-x-0 top-1/2 h-px bg-slate-200" />
           </div>
           <GoogleButton />
-        </div>
+        </motion.div>
 
-        <button type="button" onClick={() => navigate('/login')} className="mt-4 w-full text-center text-sm font-semibold text-emerald-700">
-          Already have an account? Sign in
-        </button>
-      </form>
+        <motion.div variants={fadeUp}>
+          <button type="button" onClick={() => navigate('/login')} className="mt-4 w-full text-center text-sm font-semibold text-emerald-700">
+            Already have an account? Sign in
+          </button>
+        </motion.div>
+      </motion.form>
     </AuthLayout>
   );
 }

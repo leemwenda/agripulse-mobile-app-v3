@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Plus, Milk as MilkIcon, Stethoscope, Syringe, Wallet, TrendingUp, TrendingDown, Pencil, Trash2 } from 'lucide-react';
 import { AuthedShell } from '../components/layout';
 import {
@@ -20,6 +21,42 @@ function useAnimalOptions() {
 }
 
 // --------------------------------------------------------------- Milk -----
+
+function MilkWeekChart({ records }: { records: { productionDate: string; quantityLiters: number | string }[] }) {
+  const days: { date: string; label: string; total: number }[] = [];
+  const today = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const iso = d.toLocaleDateString('en-CA');
+    const label = d.toLocaleDateString('en-GB', { weekday: 'short' });
+    const total = records
+      .filter((r) => String(r.productionDate).slice(0, 10) === iso)
+      .reduce((s, r) => s + Number(r.quantityLiters || 0), 0);
+    days.push({ date: iso, label, total });
+  }
+  const max = Math.max(1, ...days.map((d) => d.total));
+  const CHART_HEIGHT = 112;
+  return (
+    <Card>
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Last 7 days</p>
+      <div className="flex items-end justify-between gap-1.5" style={{ height: 140 }} role="img" aria-label="7-day milk production chart">
+        {days.map((d, i) => (
+          <div key={d.date} className="flex flex-1 flex-col items-center justify-end gap-1">
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: Math.max(d.total > 0 ? 4 : 2, (d.total / max) * CHART_HEIGHT), opacity: 1 }}
+              transition={{ type: 'tween', ease: [0.22, 1, 0.36, 1], duration: 0.6, delay: i * 0.06 }}
+              className="w-full max-w-[28px] rounded-t-md bg-gradient-to-t from-emerald-600 to-emerald-400"
+            />
+            <span className="text-[10px] text-slate-500">{d.label}</span>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
 export function MilkScreen() {
   const { pushToast } = useApp();
   const animals = useAnimalOptions();
@@ -114,6 +151,8 @@ export function MilkScreen() {
           <p className="text-2xl font-extrabold">{formatLiters(morning + evening)}</p>
           <p className="mt-1 text-xs opacity-90">Morning {formatLiters(morning)} · Evening {formatLiters(evening)}</p>
         </Card>
+
+        {records.length > 0 && <MilkWeekChart records={records} />}
 
         {error && <ErrorBanner message={error} onRetry={reload} />}
         {loading && <SkeletonList rows={4} />}
